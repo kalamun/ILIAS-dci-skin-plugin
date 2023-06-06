@@ -81,9 +81,9 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
         foreach ($finder->query('//a[contains(@class, "ilc_link_IntLink")]') as $node) {
           $href = $node->getAttribute("href");
           preg_match("/_(\d+)$/", $href, $match);
-          $obj_id = $match[1];
+          $ref_id = $match[1];
           
-          if ($obj_id) {
+          if ($ref_id) {
             $node_html = $dom->saveHTML($node);
             
             // <a href="ilias.php?baseClass=ilLMPresentationGUI&amp;ref_id=83&amp;cmd=resume"><img>
@@ -91,7 +91,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
             $card_node = false;
             $card_type = false;
             foreach ($finder->query('//div[contains(@class, "dci-card-preview")]') as $tmp_card_node) {
-              foreach ($finder->query('.//button[contains(@data-action, "item_ref_id=' . $obj_id . '&")]', $tmp_card_node) as $test) {
+              foreach ($finder->query('.//button[contains(@data-action, "item_ref_id=' . $ref_id . '&")]', $tmp_card_node) as $test) {
                 $is_valid = true;
                 $card_node = $tmp_card_node;
 
@@ -132,7 +132,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
         if (strpos($html, "{DCI_COURSE_TABS}") !== false) {
           $tabs = $this->getCourseTabs();
           $output = "";
-
+          
           if (count($tabs) > 0) {
             $output .= '<div class="dci-course-tabs-inner"><ul>';
             foreach ($tabs as $tab) {
@@ -143,8 +143,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
           
           $html = str_replace("{DCI_COURSE_TABS}", $output, $html);
         }
-  
-
+        
         // custom 
 
         // Fix navigation structure
@@ -197,38 +196,42 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
     global $DIC;
 
     $tabs = [];
-    $current_obj_id = $_GET['ref_id'];
+    $current_ref_id = $_GET['ref_id'];
 
-    $root_course_id = false;
-    for ($obj_id = $current_obj_id; $obj_id; $obj_id = $DIC['tree']->getParentNodeData($current_obj_id)['ref_id'] ) {
-      $node_data = $DIC["tree"]->getNodeData($obj_id);
+    $root_course = false;
+    for ($ref_id = $current_ref_id; $ref_id; $ref_id = $DIC->repositoryTree()->getParentNodeData($current_ref_id)['ref_id'] ) {
+      $node_data = $DIC["tree"]->getNodeData($ref_id);
       if (empty($node_data) || $node_data["type"] == "crs") {
-        $root_course_id = $obj_id;
+        $root_course = $node_data;
         break;
       }
     }
 
-    if (!$root_course_id) return $tabs;
+    if (!$root_course['ref_id']) return $tabs;
 
+    $sorting = \ilContainerSorting::lookupPositions($root_course['obj_id']);
 
-    foreach ($DIC['tree']->getChilds($root_course_id) as $tab) {
-      echo '<pre>'; print_r($tab); echo '</pre>';
+    foreach ($DIC->repositoryTree()->getChilds($root_course['ref_id']) as $index => $tab) {
       if ($tab["type"] !== "fold") continue;
       
       $object = \ilObjectFactory::getInstanceByRefId($tab['ref_id']);
       if (empty($object) || $object->lookupOfflineStatus($tab['ref_id']) == true) continue; // object is offline - do not display
       
-      $exp = new \ilRepositoryExplorerGUI($this, "showRepTree");
-      $exp->sortChilds($DIC['tree']->getChilds($root_course_id), $root_course_id);
-
+      // $DIC->ctrl()->setParameterByClass("ilrepositorygui", "ref_id", $tab['ref_id']);
+      // $permalink = $DIC->ctrl()->getLinkTargetByClass("ilrepositorygui", "ilrepositorygui");
+      $permalink = "http://localhost:8080/ilias.php?ref_id=" . $tab['ref_id'] . "&cmdClass=ilrepositorygui&cmdNode=wm&baseClass=ilrepositorygui";
+      
       $tabs[] = [
         "id" => $tab['ref_id'],
         "title" => $object->getTitle(),
-        "permalink" => "ilias.php?ref_id={$tab['ref_id']}&cmdClass=ilrepositorygui&cmdNode=wm&baseClass=ilrepositorygui",
-        "current_page" => $tab['ref_id'] == $current_obj_id,
+        "permalink" => $permalink,
+        "current_page" => $tab['ref_id'] == $current_ref_id,
+        "order" => $sorting[$tab['ref_id']] ?? $index,
       ];
     }
-    die();
+
+    usort($tabs, fn($a, $b) => $a["order"] - $b["order"]);
+
     return $tabs;
   }
 
