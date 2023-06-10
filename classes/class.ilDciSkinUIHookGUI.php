@@ -63,11 +63,50 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
 	 */
 	function getHTML($a_comp = false, $a_part = false, $a_par = array()) {
     global $tpl;  
-    
+
     // template_show
-    
+    //$DIC->ui()->mainTemplate();
+    //            include_once "Services/Style/System/classes/class.ilStyleDefinition.php";
+    // if (ilStyleDefinition::getCurrentSkin() != "default") {
+
 		if (!$this->is_admin && !$this->is_tutor && !empty($a_par["html"]) && !$this->ctrl->isAsynch()) {
       $html = $a_par["html"];
+
+      /* accordion */
+      if($a_part == "template_get" && $a_par["tpl_id"] == "Services/COPage/tpl.page.html" && strpos($html, "ilc_va_ihcap_VAccordIHeadCap") !== false) {
+        $dom = new DomDocument();
+        $internalErrors = libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+        libxml_use_internal_errors($internalErrors);
+        $finder = new DomXPath($dom);
+
+        foreach ($finder->query('//div[contains(@class, "ilc_va_cntr_VAccordCntr")]') as $node) {
+          $node->setAttribute('class', $node->getAttribute('class') . ' dci-accordion');
+          
+          // toggle
+          // $toggle = $finder->query('//div[contains(@class, "il_VAccordionToggleDef")]', $node)[0];
+          // $toggle->setAttribute('class', 'dci-accordion-toggle');
+          
+          // heading
+          $heading_wrapper = $finder->query('//div[contains(@class, "ilc_va_ihead_VAccordIHead")]', $node)[0];
+          $heading_wrapper->setAttribute('class', 'dci-accordion-heading');
+
+          $heading = $finder->query('//div[contains(@class, "ilc_va_ihcap_VAccordIHeadCap")]', $node)[0];
+          if ($heading) {
+            $h2 = $dom->createElement('h2', $heading->textContent);
+            while ($heading->hasChildNodes()) {
+              $heading->removeChild($heading->firstChild);
+            }
+            $heading->appendChild($h2);
+            
+            $toggle = $dom->createElement('div');
+            $toggle->setAttribute('class', 'icon-down-big');
+            $heading->appendChild($toggle);
+          }         
+        }
+
+        $html = $dom->saveHTML();
+      }
 
       if ($a_part == "template_get" && $a_par["tpl_id"] == "Services/Container/tpl.container_page.html" && strpos($html, "ilContainerBlock") !== false) {
         $dom = new DomDocument();
