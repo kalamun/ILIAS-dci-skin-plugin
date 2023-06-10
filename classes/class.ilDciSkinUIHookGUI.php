@@ -66,8 +66,12 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
 
     // template_show
     //$DIC->ui()->mainTemplate();
-    //            include_once "Services/Style/System/classes/class.ilStyleDefinition.php";
-    // if (ilStyleDefinition::getCurrentSkin() != "default") {
+
+    /* Prevent any modification to users not using the DCI Skin */
+    include_once "Services/Style/System/classes/class.ilStyleDefinition.php";
+    if (ilStyleDefinition::getCurrentSkin() !== 'dci') {
+      return ["mode" => ilUIHookPluginGUI::KEEP, "html" => ""];
+    }
 
 		if (!$this->is_admin && !$this->is_tutor && !empty($a_par["html"]) && !$this->ctrl->isAsynch()) {
       $html = $a_par["html"];
