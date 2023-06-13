@@ -63,10 +63,15 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
 	 */
 	function getHTML($a_comp = false, $a_part = false, $a_par = array()) {
     global $tpl;  
+    global $DIC;
 
     // template_show
     //$DIC->ui()->mainTemplate();
-
+/*     echo '<pre>';
+    print_r(get_class_methods($DIC->factory()));
+    echo '</pre>';
+    die();
+ */
     /* Prevent any modification to users not using the DCI Skin */
     include_once "Services/Style/System/classes/class.ilStyleDefinition.php";
     if (ilStyleDefinition::getCurrentSkin() !== 'dci') {
@@ -119,6 +124,13 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
         libxml_use_internal_errors($internalErrors);
         $finder = new DomXPath($dom);
 
+        /* load user progress history */
+        include_once "Modules/Course/classes/class.ilCourseLMHistory.php";
+        $course_id = $_GET['ref_id'];
+        $user_id = $DIC->user()->getId();
+        $history_obj = new ilCourseLMHistory($course_id, $user_id);
+        $history = $history_obj->getLMHistory();
+
         /* replace links by tiles */
         // <a class="ilc_link_IntLink" href="./goto.php?target=lm_82" target="_top" id="il__obj_82_307_1">
         foreach ($finder->query('//a[contains(@class, "ilc_link_IntLink")]') as $node) {
@@ -151,6 +163,14 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
                 $card_node_copy->setAttribute('class', $card_node_copy->getAttribute('class') . ' type-' . $card_type);
               }
 
+/* 
+              $progress_status = isset($history[$ref_id]) ? "completed" : "not-started";
+              $card_progress_div = $finder->query('//div[contains(@class, "dci-card-progress")]', $card_node_copy)[0];
+              if (!empty($card_progress_div)) {
+                $text = $dom->createTextNode( $progress_status ); // TODO: multilingual support via string
+                $card_progress_div->appendChild($text);
+              }
+ */
               $node->parentNode->replaceChild($card_node_copy, $node);
             }
             
@@ -262,7 +282,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
       
       // $DIC->ctrl()->setParameterByClass("ilrepositorygui", "ref_id", $tab['ref_id']);
       // $permalink = $DIC->ctrl()->getLinkTargetByClass("ilrepositorygui", "ilrepositorygui");
-      $permalink = "http://localhost:8080/ilias.php?ref_id=" . $tab['ref_id'] . "&cmdClass=ilrepositorygui&cmdNode=wm&baseClass=ilrepositorygui";
+      $permalink = "/ilias.php?ref_id=" . $tab['ref_id'] . "&cmdClass=ilrepositorygui&cmdNode=wm&baseClass=ilrepositorygui";
       
       $tabs[] = [
         "id" => $tab['ref_id'],
