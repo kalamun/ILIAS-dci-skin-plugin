@@ -282,7 +282,8 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
       
       // $DIC->ctrl()->setParameterByClass("ilrepositorygui", "ref_id", $tab['ref_id']);
       // $permalink = $DIC->ctrl()->getLinkTargetByClass("ilrepositorygui", "ilrepositorygui");
-      $permalink = "/ilias.php?ref_id=" . $tab['ref_id'] . "&cmdClass=ilrepositorygui&cmdNode=wm&baseClass=ilrepositorygui";
+      // $permalink = "/ilias.php?ref_id=" . $tab['ref_id'] . "&cmdClass=ilrepositorygui&cmdNode=wm&baseClass=ilrepositorygui";
+      $permalink = "/ilias.php?ref_id=" . $tab['ref_id'] . "&cmd=frameset&cmdClass=ilrepositorygui&cmdNode=wi&baseClass=ilrepositorygui";
       
       $tabs[] = [
         "id" => $tab['ref_id'],
