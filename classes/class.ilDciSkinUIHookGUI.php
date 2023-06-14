@@ -97,21 +97,23 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
           // $toggle->setAttribute('class', 'dci-accordion-toggle');
           
           // heading
-          $heading_wrapper = $finder->query('//div[contains(@class, "ilc_va_ihead_VAccordIHead")]', $node)[0];
-          $heading_wrapper->setAttribute('class', 'dci-accordion-heading');
+          foreach($finder->query('//div[contains(@class, "ilc_va_ihead_VAccordIHead")]', $node) as $subnode) {
+            $subnode->setAttribute('class', 'dci-accordion-heading');
+          }
 
-          $heading = $finder->query('//div[contains(@class, "ilc_va_ihcap_VAccordIHeadCap")]', $node)[0];
-          if ($heading) {
-            $h2 = $dom->createElement('h2', $heading->textContent);
-            while ($heading->hasChildNodes()) {
-              $heading->removeChild($heading->firstChild);
-            }
-            $heading->appendChild($h2);
-            
-            $toggle = $dom->createElement('div');
-            $toggle->setAttribute('class', 'icon-down');
-            $heading->appendChild($toggle);
-          }         
+          foreach($finder->query('//div[contains(@class, "ilc_va_ihcap_VAccordIHeadCap")]', $node) as $heading) {
+            if ($heading) {
+              $h2 = $dom->createElement('h2', $heading->textContent);
+              while ($heading->hasChildNodes()) {
+                $heading->removeChild($heading->firstChild);
+              }
+              $heading->appendChild($h2);
+              
+              $toggle = $dom->createElement('div');
+              $toggle->setAttribute('class', 'icon-down');
+              $heading->appendChild($toggle);
+            }         
+          }
         }
 
         $html = $dom->saveHTML();
