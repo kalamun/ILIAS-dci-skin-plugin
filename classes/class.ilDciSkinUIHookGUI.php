@@ -102,7 +102,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
 
           $heading = $finder->query('.//div', $heading_wrapper)[0];
           if ($heading) {
-            $h2 = $dom->createElement('h2', $heading->textContent);
+            $h2 = $dom->createElement('h2', htmlentities($heading->textContent));
             while ($heading->hasChildNodes()) {
               $heading->removeChild($heading->firstChild);
             }
