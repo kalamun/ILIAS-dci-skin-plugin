@@ -109,7 +109,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
             $heading->appendChild($h2);
             
             $toggle = $dom->createElement('div');
-            $toggle->setAttribute('class', 'icon-down-big');
+            $toggle->setAttribute('class', 'icon-down');
             $heading->appendChild($toggle);
           }         
         }
