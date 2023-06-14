@@ -196,7 +196,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
           $tabs = $this->getCourseTabs();
           $output = "";
           
-          if (count($tabs) > 0) {
+          if (count($tabs) > 1) {
             $output .= '<div class="dci-course-tabs-inner"><ul>';
             foreach ($tabs as $tab) {
               $output .= '<li class="' . ($tab['current_page'] ? 'selected' : '') . '"><a href="' . $tab['permalink'] . '">' . $tab['title'] . '</a></li>';
