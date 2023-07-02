@@ -124,60 +124,6 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
         libxml_use_internal_errors($internalErrors);
         $finder = new DomXPath($dom);
 
-        /* load user progress history */
-        include_once "Modules/Course/classes/class.ilCourseLMHistory.php";
-        $course_id = $_GET['ref_id'];
-        $user_id = $DIC->user()->getId();
-        $history_obj = new ilCourseLMHistory($course_id, $user_id);
-        $history = $history_obj->getLMHistory();
-
-        /* replace links by tiles */
-        // <a class="ilc_link_IntLink" href="./goto.php?target=lm_82" target="_top" id="il__obj_82_307_1">
-        foreach ($finder->query('//a[contains(@class, "ilc_link_IntLink")]') as $node) {
-          $href = $node->getAttribute("href");
-          preg_match("/_(\d+)$/", $href, $match);
-          $ref_id = $match[1];
-          
-          if ($ref_id) {
-            $node_html = $dom->saveHTML($node);
-            
-            // <a href="ilias.php?baseClass=ilLMPresentationGUI&amp;ref_id=83&amp;cmd=resume"><img>
-            $is_valid = false;
-            $card_node = false;
-            $card_type = false;
-            foreach ($finder->query('//div[contains(@class, "dci-card-preview")]') as $tmp_card_node) {
-              foreach ($finder->query('.//button[contains(@data-action, "item_ref_id=' . $ref_id . '&")]', $tmp_card_node) as $test) {
-                $is_valid = true;
-                $card_node = $tmp_card_node;
-
-                $data_action = $test->getAttribute("data-action");
-                preg_match("/type=([[:alnum:]]+)/", $data_action, $match);
-                $card_type = $match[1];
-                break;
-              }
-            }
-
-            if ($is_valid) {
-              $card_node_copy = $card_node->cloneNode(true);
-              if (!empty($card_type)) {
-                $card_node_copy->setAttribute('class', $card_node_copy->getAttribute('class') . ' type-' . $card_type);
-              }
-
-/* 
-              $progress_status = isset($history[$ref_id]) ? "completed" : "not-started";
-              $card_progress_div = $finder->query('//div[contains(@class, "dci-card-progress")]', $card_node_copy)[0];
-              if (!empty($card_progress_div)) {
-                $text = $dom->createTextNode( $progress_status ); // TODO: multilingual support via string
-                $card_progress_div->appendChild($text);
-              }
- */
-              $node->parentNode->replaceChild($card_node_copy, $node);
-            }
-            
-            // <a href="ilias.php?baseClass=ilLMPresentationGUI&amp;ref_id=83&amp;cmd=resume" id="il_ui_fw_647ca7078b6e20_29554483">
-          }
-        }
-
         // remove card container
         $card_container = $finder->query('//div[contains(@class, "ilContainerBlock")]');
         if (!empty($card_container[0])) {
@@ -192,7 +138,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
         $html = str_replace("{SKIN_URI}", "/Customizing/global/skin/dci", $html);
   
         /* add tabs */
-        if (strpos($html, "{DCI_COURSE_TABS}") !== false) {
+        if (strpos($html, "{DCI_COURSE_MENU}") !== false) {
           $tabs = $this->getCourseTabs();
           $output = "";
           
@@ -204,7 +150,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
             $output .= '</ul></div>';
           }
           
-          $html = str_replace("{DCI_COURSE_TABS}", $output, $html);
+          $html = str_replace("{DCI_COURSE_MENU}", $output, $html);
         }
         
         // custom 
@@ -280,10 +226,8 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
       $object = \ilObjectFactory::getInstanceByRefId($tab['ref_id']);
       if (empty($object) || $object->lookupOfflineStatus($tab['ref_id']) == true) continue; // object is offline - do not display
       
-      // $DIC->ctrl()->setParameterByClass("ilrepositorygui", "ref_id", $tab['ref_id']);
-      // $permalink = $DIC->ctrl()->getLinkTargetByClass("ilrepositorygui", "ilrepositorygui");
-      // $permalink = "/ilias.php?ref_id=" . $tab['ref_id'] . "&cmdClass=ilrepositorygui&cmdNode=wm&baseClass=ilrepositorygui";
-      $permalink = "/ilias.php?ref_id=" . $tab['ref_id'] . "&cmd=frameset&cmdClass=ilrepositorygui&cmdNode=wi&baseClass=ilrepositorygui";
+      $DIC->ctrl()->setParameterByClass("ilrepositorygui", "ref_id", $tab['ref_id']);
+      $permalink = $DIC->ctrl()->getLinkTargetByClass("ilrepositorygui", "frameset");
       
       $tabs[] = [
         "id" => $tab['ref_id'],
