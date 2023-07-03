@@ -156,7 +156,11 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
           if (count($tabs) > 1) {
             $output .= '<div class="dci-course-tabs-inner"><ul>';
             foreach ($tabs as $tab) {
-              $output .= '<li class="' . ($tab['current_page'] ? 'selected' : '') . '"><a href="' . $tab['permalink'] . '">' . $tab['title'] . '</a></li>';
+              $output .= '<li class="' . ($tab['current_page'] ? 'selected' : '') . ' ' . ($tab['root'] ? 'is-root' : '') . '"><a href="' . $tab['permalink'] . '">' . $tab['title'] . '</a>';
+              if ($tab['current_page'] && !$tab['root']) {
+                $output .= '<div class="dci-page-navbar"></div>';
+              }
+              $output .= '</li>';
             }
             $output .= '</ul></div>';
           }
@@ -231,23 +235,33 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
 
     $sorting = \ilContainerSorting::lookupPositions($root_course['obj_id']);
 
-    foreach ($DIC->repositoryTree()->getChilds($root_course['ref_id']) as $index => $tab) {
-      if ($tab["type"] !== "fold") continue;
+    $childs = $DIC->repositoryTree()->getChilds($root_course['ref_id']);
+    if (count($childs) > 0) {
+
+      array_unshift($childs, [
+        "type" => "fold",
+        "ref_id" => $root_course['ref_id'],
+      ]);
       
-      $object = \ilObjectFactory::getInstanceByRefId($tab['ref_id']);
-      if (empty($object) || $object->lookupOfflineStatus($tab['ref_id']) == true) continue; // object is offline - do not display
-      
-      $DIC->ctrl()->setParameterByClass("ilrepositorygui", "ref_id", $tab['ref_id']);
-      $permalink = $DIC->ctrl()->getLinkTargetByClass("ilrepositorygui", "frameset");
-      
-      $tabs[] = [
-        "id" => $tab['ref_id'],
-        "title" => $object->getTitle(),
-        "permalink" => $permalink,
-        "current_page" => $tab['ref_id'] == $current_ref_id,
-        "order" => $sorting[$tab['ref_id']] ?? $index,
-      ];
-    }
+      foreach ($childs as $index => $tab) {
+        if ($tab["type"] !== "fold") continue;
+        
+        $object = \ilObjectFactory::getInstanceByRefId($tab['ref_id']);
+        if (empty($object) || $object->lookupOfflineStatus($tab['ref_id']) == true) continue; // object is offline - do not display
+        
+        $DIC->ctrl()->setParameterByClass("ilrepositorygui", "ref_id", $tab['ref_id']);
+        $permalink = $DIC->ctrl()->getLinkTargetByClass("ilrepositorygui", "frameset");
+        
+        $tabs[] = [
+          "id" => $tab['ref_id'],
+          "title" => $object->getTitle(),
+          "permalink" => $permalink,
+          "current_page" => $tab['ref_id'] == $current_ref_id,
+          "order" => $sorting[$tab['ref_id']] ?? $index,
+          "root" => ($root_course['ref_id'] === $tab['ref_id']),
+        ];
+      }
+    }  
 
     usort($tabs, fn($a, $b) => $a["order"] - $b["order"]);
 
