@@ -18,6 +18,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
   protected $ctrl;
   protected $object;
   protected $template;
+  protected $db;
 
   protected $is_admin;
   protected $is_tutor;
@@ -33,6 +34,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
     $this->user = $DIC->user();
     $this->ctrl = $DIC->ctrl();
     $this->object = $DIC->object();
+    $this->db = $DIC->database();
 
     $this->is_admin = false;
     $this->is_tutor = false;
@@ -156,7 +158,23 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
           if (count($tabs) > 1) {
             $output .= '<div class="dci-course-tabs-inner"><ul>';
             foreach ($tabs as $tab) {
-              $output .= '<li class="' . ($tab['current_page'] ? 'selected' : '') . ' ' . ($tab['root'] ? 'is-root' : '') . '"><a href="' . $tab['permalink'] . '">' . $tab['title'] . '</a>';
+              $output .= '<li class="'
+                      . ($tab['current_page'] ? 'selected' : '') . ' '
+                      . ($tab['root'] ? 'is-root' : '') . ' '
+                      . ($tab['completed'] ? 'is-completed' : '')
+                      . '"><a href="' . $tab['permalink'] . '">'
+                      . '<span class="title">' . $tab['title'] . '</span>'
+                      . ($tab['cards'] > 0 ? (
+                        $tab['root'] ? (
+                          '<span class="progress"><meter min="0" max="0" value=" ' . round(100 / $tab['cards'] * $tab['cards_completed']) . '"></meter></span>'
+                        ) : (
+                          '<span class="progress' . ($tab['completed'] ? ' completed' : '') . '">'
+                            . ($tab['completed'] ? '<span class="icon-done"></span>' : '')
+                            . $tab['cards_completed'] . ' / ' . $tab['cards']
+                          . '</span>'
+                        )
+                      ) : '')
+                      . '</a>';
               if ($tab['current_page'] && !$tab['root']) {
                 $output .= '<div class="dci-page-navbar"></div>';
               }
@@ -249,9 +267,19 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
         $object = \ilObjectFactory::getInstanceByRefId($tab['ref_id']);
         if (empty($object) || $object->lookupOfflineStatus($tab['ref_id']) == true) continue; // object is offline - do not display
         
-        $DIC->ctrl()->setParameterByClass("ilrepositorygui", "ref_id", $tab['ref_id']);
-        $permalink = $DIC->ctrl()->getLinkTargetByClass("ilrepositorygui", "frameset");
+        $obj_id = $object->getId();
+        $this->ctrl->setParameterByClass("ilrepositorygui", "ref_id", $tab['ref_id']);
+        $permalink = $this->ctrl->getLinkTargetByClass("ilrepositorygui", "frameset");
         
+        $cards = $this->getCardsOnPage($obj_id);
+        $cards_completed = [];
+        foreach ($cards as $card) {
+          if ($card['completed']) {
+            $cards_completed[] = $card;
+          }
+        }
+        $is_completed = count($cards_completed) === count($cards);
+
         $tabs[] = [
           "id" => $tab['ref_id'],
           "title" => $object->getTitle(),
@@ -259,6 +287,9 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
           "current_page" => $tab['ref_id'] == $current_ref_id,
           "order" => $sorting[$tab['ref_id']] ?? $index,
           "root" => ($root_course['ref_id'] === $tab['ref_id']),
+          "cards" => count($cards),
+          "cards_completed" => count($cards_completed),
+          "completed" => $is_completed,
         ];
       }
     }  
@@ -268,5 +299,52 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
     return $tabs;
   }
 
+  private function getCardsOnPage($obj_id) {
+    $ids = [];
+
+    $sql = "SELECT DISTINCT content FROM page_object WHERE parent_id = %s AND active = %s";
+    $res = $this->db->queryF(
+        $sql,
+        ['integer', 'integer'],
+        [$obj_id, 1]
+    );
+    $page_content = $this->db->fetchAssoc($res)["content"];
+    
+    $dom = new DomDocument();
+    $dom->version = "1.0";
+    $dom->encoding = "utf-8";
+    $internalErrors = libxml_use_internal_errors(true);
+    $dom->loadXML($page_content);
+    libxml_use_internal_errors($internalErrors);
+
+    $finder = new DOMXPath($dom);
+    foreach ($finder->query('//Plugged[contains(@PluginName, "Card")]') as $card) {
+      $property_ref_id = $finder->query('./PluggedProperty[contains(@Name, "ref_id")]', $card)[0];
+      $ids[] = ["ref_id" => (int) $property_ref_id->textContent];
+    }
+
+    foreach($ids as $i => $id) {
+      $object = \ilObjectFactory::getInstanceByRefId($id['ref_id']);
+      // filter only allowed item types
+      if (!in_array($object->getType(), ["lm", "sahs", "file", "htlm", "tst"])) {
+        unset($ids[$i]);
+        continue;
+      }
+      $obj_id = $object->getId();
+
+      $already_exists = array_search($id['ref_id'], array_column($ids, 'ref_id'));
+      if (isset($already_exists['completed'])) {
+        $ids[$i] = $already_exists;
+      } else {
+        $lp_completed = ilLPStatus::_hasUserCompleted($obj_id, $this->user->getId());
+
+        $ids[$i]['type'] = $object->getType();
+        $ids[$i]['obj_id'] = $obj_id;
+        $ids[$i]['completed'] = $lp_completed;
+      }
+    }
+
+    return $ids;
+  }
 
 }
