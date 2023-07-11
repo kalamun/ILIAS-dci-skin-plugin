@@ -309,6 +309,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
         [$obj_id, 1]
     );
     $page_content = $this->db->fetchAssoc($res)["content"];
+    if (empty($page_content)) return $ids;
     
     $dom = new DomDocument();
     $dom->version = "1.0";
