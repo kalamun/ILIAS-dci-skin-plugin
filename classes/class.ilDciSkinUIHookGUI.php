@@ -67,6 +67,11 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
 		if (!$this->is_admin && !$this->is_tutor && !empty($a_par["html"]) && !$this->ctrl->isAsynch()) {
       $html = $a_par["html"];
 
+      if($a_part == "template_show") {
+        // custom placeholders
+        $html = dciSkin_layout::apply_custom_placeholders($html);
+      }
+
       /* accordion */
       if($a_part == "template_get" && $a_par["tpl_id"] == "Services/COPage/tpl.page.html" && strpos($html, "ilc_va_ihcap_VAccordIHeadCap") !== false) {
         $html = dciSkin_accordion::apply($html);

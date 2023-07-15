@@ -10,6 +10,9 @@ class dciSkin_layout
 
     public static function apply_custom_placeholders($html)
     {
+        global $DIC;
+        $user = $DIC->user();
+
         $body_class = [];
 
         if (dciSkin_tabs::getRootCourse($_GET['ref_id']) !== false) {
@@ -18,6 +21,10 @@ class dciSkin_layout
 
         $html = str_replace("{BODY_CLASS}", implode(" ", $body_class), $html);
         $html = str_replace("{SKIN_URI}", "/Customizing/global/skin/dci", $html);
+
+        // short codes
+        $name = $user->getFirstName();
+        $html = str_replace("[USER_NAME]", $name, $html);
         return $html;
     }
 
