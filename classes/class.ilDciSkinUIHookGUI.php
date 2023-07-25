@@ -3,6 +3,7 @@ include_once("./Services/Object/classes/class.ilObjectGUI.php");
 require_once(__DIR__ . "/../inc/accordion.php");
 require_once(__DIR__ . "/../inc/layout.php");
 require_once(__DIR__ . "/../inc/tabs.php");
+require_once(__DIR__ . "/../inc/menu.php");
 
 /**
  * Class ilDciSkinUIHookGUI
@@ -73,13 +74,17 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
 		if (!$this->is_admin && !$this->is_tutor && !empty($a_par["html"]) && !$this->ctrl->isAsynch()) {
       $html = $a_par["html"];
       
-      if($a_part == "template_get" && $a_par["tpl_id"] == "src/UI/templates/default/MainControls/tpl.mainbar.html") {
-        $html = dciSkin_layout::apply_custom_placeholders($html);
-      }
-
       if($a_part == "template_show") {
         // custom placeholders
         $html = dciSkin_layout::apply_custom_placeholders($html);
+      }
+      
+      /* menu */
+      if($a_part == "template_get" && $a_par["tpl_id"] == "src/UI/templates/default/MainControls/tpl.mainbar.html") {
+        $html = dciSkin_menu::apply_mainbar($html);
+      }
+      if($a_part == "template_get" && $a_par["tpl_id"] == "src/UI/templates/default/MainControls/tpl.metabar.html") {
+        $html = dciSkin_menu::apply_metabar($html);
       }
 
       /* accordion */
