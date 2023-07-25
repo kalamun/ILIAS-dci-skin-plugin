@@ -9,7 +9,7 @@ require_once(__DIR__ . "/../inc/tabs.php");
  * @author            Kalamun <rp@kalamun.net>
  * @version $Id$
  * @ingroup ServicesUIComponent
- * @ilCtrl_isCalledBy ilDciSkinUIHookGUI: ilUIPluginRouterGUI, ilAdministrationGUI
+ * @ilCtrl_isCalledBy ilDciSkinUIHookGUI: ilUIPluginRouterGUI, ilAdministrationGUI, ilRepositoryGUI
  */
 
 class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
@@ -55,17 +55,27 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
 	function getHTML($a_comp = false, $a_part = false, $a_par = array()) {
     global $tpl;  
     global $DIC;
-
+    
+    // redirect to the home page
+    $homepage_url = "/ilias.php?ref_id=1&cmd=frameset&cmdClass=ilrepositorygui&baseClass=ilrepositorygui"; // TODO: Set in config UI
+    if (strpos($homepage_url, "ilDashboardGUI") === false &&  $_GET['baseClass'] == "ilDashboardGUI" && $_GET['cmd'] == "jumpToSelectedItems") {
+      header('Location: ' . $homepage_url);
+    }
+    
     // template_show
-
+    
     /* Prevent any modification to users not using the DCI Skin */
     include_once "Services/Style/System/classes/class.ilStyleDefinition.php";
     if (ilStyleDefinition::getCurrentSkin() !== 'dci') {
       return ["mode" => ilUIHookPluginGUI::KEEP, "html" => ""];
     }
-
+    
 		if (!$this->is_admin && !$this->is_tutor && !empty($a_par["html"]) && !$this->ctrl->isAsynch()) {
       $html = $a_par["html"];
+      
+      if($a_part == "template_get" && $a_par["tpl_id"] == "src/UI/templates/default/MainControls/tpl.mainbar.html") {
+        $html = dciSkin_layout::apply_custom_placeholders($html);
+      }
 
       if($a_part == "template_show") {
         // custom placeholders
