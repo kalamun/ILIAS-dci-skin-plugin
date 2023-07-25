@@ -27,7 +27,7 @@ class dciSkin_layout
         $html = str_replace("[USER_NAME]", $name, $html);
         
         // URL SHORT CODES
-        if (strpos($html, "#TRAINING_CENTER#")) {
+        if (strpos($html, "#TRAINING_CENTER#") !== false) {
             $centers = [];
             foreach (self::getCoursesOfUser($DIC->user()->getId(), true) as $user_course) {
                 $center = $DIC->repositoryTree()->getParentNodeData($user_course['ref_id']);
@@ -46,7 +46,7 @@ class dciSkin_layout
             }
         }
 
-        if (strpos($html, "#COURSES_URI#")) {
+        if (strpos($html, "#COURSES_URI#") !== false) {
             $my_courses_uri = "";
             $html = str_replace("#COURSES#", $my_courses_uri, $html);
         }
