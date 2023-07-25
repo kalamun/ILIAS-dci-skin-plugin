@@ -27,26 +27,29 @@ class dciSkin_layout
         $html = str_replace("[USER_NAME]", $name, $html);
         
         // URL SHORT CODES
-        $centers = [];
-        foreach (self::getCoursesOfUser($DIC->user()->getId(), true) as $user_course) {
-            $center = $DIC->repositoryTree()->getParentNodeData($user_course['ref_id']);
-            if (!isset($centers[ $center['ref_id'] ])) {
-                $centers[ $center['ref_id'] ] = $center;
-                
-                $DIC->ctrl()->setParameterByClass("ilrepositorygui", "ref_id", $center['ref_id']);
-                $permalink = $DIC->ctrl()->getLinkTargetByClass("ilrepositorygui", "frameset");
-                $centers[ $center['ref_id'] ]['permalink'] = $permalink;
+        if (strpos($html, "#TRAINING_CENTER#")) {
+            $centers = [];
+            foreach (self::getCoursesOfUser($DIC->user()->getId(), true) as $user_course) {
+                $center = $DIC->repositoryTree()->getParentNodeData($user_course['ref_id']);
+                if (!isset($centers[ $center['ref_id'] ])) {
+                    $centers[ $center['ref_id'] ] = $center;
+                    
+                    $DIC->ctrl()->setParameterByClass("ilrepositorygui", "ref_id", $center['ref_id']);
+                    $permalink = $DIC->ctrl()->getLinkTargetByClass("ilrepositorygui", "frameset");
+                    $centers[ $center['ref_id'] ]['permalink'] = $permalink;
+                }
+            }
+    
+            foreach ($centers as $center) {
+                $my_center_uri = $center['permalink'];
+                $html = str_replace("#TRAINING_CENTER_URI#", $my_center_uri, $html);
             }
         }
 
-        foreach ($centers as $center) {
-            $my_center_uri = $center['permalink'];
-            $html = str_replace("#MY_CENTER_URI#", "/" . $my_center_uri, $html);
+        if (strpos($html, "#COURSES_URI#")) {
+            $my_courses_uri = "";
+            $html = str_replace("#COURSES#", $my_courses_uri, $html);
         }
-
-        $my_courses_uri = "";
-        $html = str_replace("#MY_COURSES_URI#", "/" . $my_courses_uri, $html);
-        
 
         return $html;
     }
