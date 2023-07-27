@@ -35,8 +35,30 @@ class dciSkin_menu {
     }
 
     if (strpos($html, "#COURSES_URI#") !== false) {
-      $my_courses_uri = "";
-      $html = str_replace("#COURSES_URI#", "/" . $my_courses_uri, $html);
+      $user_courses = self::getCoursesOfUser($user->getId(), true);
+
+      if (count($user_courses) === 0) {
+        $html = self::remove_element("#COURSES_URI#", $html);
+
+      } else if (count($user_courses) === 1) {
+        $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $user_courses[0]['ref_id']);
+        $my_courses_uri = $ctrl->getLinkTargetByClass("ilrepositorygui", "frameset");
+        $html = str_replace("#COURSES_URI#", "/" . $my_courses_uri, $html);
+        
+      } else {
+        $subelements = [];
+        foreach ($user_courses as $user_course) {
+          $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $user_course['ref_id']);
+          $my_courses_uri = $ctrl->getLinkTargetByClass("ilrepositorygui", "frameset");
+
+          $subelements[] = [
+            "title" => ilObject::_lookupTitle($user_course['obj_id']),
+            "permalink" => $my_courses_uri,
+          ];
+        }
+        $html = self::add_subelements("#COURSES_URI#", $subelements, $html);
+
+      }
     }
   
     return $html;
@@ -118,6 +140,50 @@ class dciSkin_menu {
         $menu_element->parentNode->removeChild($menu_element);
       }
     }
+
+    return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+  }
+
+
+  public static function remove_element($short_code, $html) {
+    $dom = new DomDocument();
+    $internalErrors = libxml_use_internal_errors(true);
+    $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+    libxml_use_internal_errors($internalErrors);
+    $finder = new DomXPath($dom);
+
+    foreach ($finder->query('//li/a[contains(@href, "' . $short_code . '")]') as $menu_element) {
+      $menu_element->parentNode->removeChild($menu_element);
+    }
+
+    return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+  }
+
+
+  public static function add_subelements($short_code, $elements, $html) {
+    $dom = new DomDocument();
+    $internalErrors = libxml_use_internal_errors(true);
+    $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+    libxml_use_internal_errors($internalErrors);
+    $finder = new DomXPath($dom);
+
+    foreach ($finder->query('//li/a[contains(@href, "' . $short_code . '")]') as $menu_element) {
+      $menu_element->setAttribute("href", "#");
+    }
+
+    $submenu = $dom->createElement('div');
+    $submenu->setAttribute('class', 'dci-mainbar-li-submenu');
+    $inner = $dom->createElement('div');
+    $inner->setAttribute('class', 'dci-main-slate');
+    
+    foreach ($elements as $element) {
+      $a = $dom->createElement('a', $element['title']);
+      $a->setAttribute("href", $element['permalink']);
+      $inner->appendChild($a);
+    }
+    
+    $submenu->appendChild($inner);
+    $menu_element->appendChild($submenu);
 
     return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
   }
