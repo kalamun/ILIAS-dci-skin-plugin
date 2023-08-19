@@ -46,4 +46,21 @@ class dciSkin_layout
         return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
     }
 
+    public static function cleanup_dead_code($html)
+    {
+        $dom = new DomDocument();
+        $internalErrors = libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+        libxml_use_internal_errors($internalErrors);
+        $finder = new DomXPath($dom);
+
+        // remove card container
+        $card_container = $finder->query('//a[contains(@id, "ilPageShowAdvContent")]');
+        if (!empty($card_container[0])) {
+            $card_container[0]->parentNode->removeChild($card_container[0]);
+        }
+
+        return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+    }
+
 }

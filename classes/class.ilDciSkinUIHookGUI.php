@@ -1,6 +1,8 @@
 <?php
 include_once("./Services/Object/classes/class.ilObjectGUI.php");
 require_once(__DIR__ . "/../inc/accordion.php");
+require_once(__DIR__ . "/../inc/course.php");
+require_once(__DIR__ . "/../inc/footer.php");
 require_once(__DIR__ . "/../inc/layout.php");
 require_once(__DIR__ . "/../inc/tabs.php");
 require_once(__DIR__ . "/../inc/menu.php");
@@ -95,6 +97,12 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
       /* remove cards default section */
       if ($a_part == "template_get" && $a_par["tpl_id"] == "Services/Container/tpl.container_page.html" && strpos($html, "ilContainerBlock") !== false) {
         $html = dciSkin_layout::remove_default_cards($html);
+        $html = dciSkin_layout::cleanup_dead_code($html);
+      }
+
+      /* footer */
+      if ($a_part == "template_get" && $a_par['tpl_id'] == "src/UI/templates/default/MainControls/tpl.footer.html") {
+        $html = dciSkin_footer::apply($html);
       }
       
       if ($a_part == "template_load") {

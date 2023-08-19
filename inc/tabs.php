@@ -13,8 +13,16 @@ class dciSkin_tabs
             $tabs = static::getCourseTabs();
             $output = "";
 
-            if (count($tabs) > 1) {
+            if (count($tabs) > 0) {
                 $output .= '<div class="dci-course-tabs-inner"><ul>';
+
+                $mandatory_cards_count = 0;
+                $completed_cards_count = 0;
+                foreach ($tabs as $page) {
+                    $mandatory_cards_count += $page['cards_mandatory'];
+                    $completed_cards_count += $page['cards_completed'];
+                }
+
                 foreach ($tabs as $tab) {
                     $output .= '<li class="'
                         . ($tab['current_page'] ? 'selected' : '') . ' '
@@ -22,13 +30,13 @@ class dciSkin_tabs
                         . ($tab['completed'] ? 'is-completed' : '')
                         . '"><a href="' . $tab['permalink'] . '">'
                         . '<span class="title">' . $tab['title'] . '</span>'
-                        . ($tab['cards'] > 0 ? (
+                        . ($tab['cards_mandatory'] > 0 ? (
                         $tab['root'] ? (
-                            '<span class="progress"><meter min="0" max="0" value=" ' . round(100 / $tab['cards'] * $tab['cards_completed']) . '"></meter></span>'
+                            $mandatory_cards_count > 0 ? '<span class="progress"><meter min="0" max="0" value=" ' . round(100 / $mandatory_cards_count * $completed_cards_count) . '"></meter></span>' : ''
                         ) : (
                             '<span class="progress' . ($tab['completed'] ? ' completed' : '') . '">'
                             . ($tab['completed'] ? '<span class="icon-done"></span>' : '')
-                            . $tab['cards_completed'] . ' / ' . $tab['cards']
+                            . $tab['cards_completed'] . ' / ' . $tab['cards_mandatory']
                             . '</span>'
                         )
                     ) : '')
@@ -71,14 +79,14 @@ class dciSkin_tabs
     /**
      * get course tabs, which means the list of folders of the current course
      */
-    public static function getCourseTabs()
+    public static function getCourseTabs($ref_id = null)
     {
         global $DIC;
         $ctrl = $DIC->ctrl();
         $tree = $DIC->repositoryTree();
 
         $tabs = [];
-        $current_ref_id = $_GET['ref_id'];
+        $current_ref_id = $ref_id ?? $_GET['ref_id'];
 
         $root_course = static::getRootCourse($current_ref_id);
 
@@ -87,6 +95,11 @@ class dciSkin_tabs
         }
 
         $sorting = \ilContainerSorting::lookupPositions($root_course['obj_id']);
+        $mandatory_objects = \dciCourse::get_mandatory_objects($root_course['obj_id']);
+        $mandatory_objects_status = [];
+        foreach($mandatory_objects as $obj) {
+            $mandatory_objects_status[$obj['obj_id']] = $obj['completed'];
+        }
 
         $childs = $tree->getChilds($root_course['ref_id']);
         if (count($childs) > 0) {
@@ -112,22 +125,21 @@ class dciSkin_tabs
                 $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "frameset");
 
                 $cards = static::getCardsOnPage($obj_id);
-                $cards_completed = [];
-                foreach ($cards as $card) {
-                    if ($card['completed']) {
-                        $cards_completed[] = $card;
-                    }
-                }
-                $is_completed = count($cards_completed) === count($cards);
+                $cards_completed = array_filter($cards, fn($card) => !!$mandatory_objects_status[$card['obj_id']]);
+                $cards_mandatory = array_filter($cards, fn($card) => isset($mandatory_objects_status[$card['obj_id']]));
+                $is_completed = count($cards_completed) === count($cards_mandatory);
 
                 $tabs[] = [
                     "id" => $tab['ref_id'],
+                    "ref_id" => $tab['ref_id'],
+                    "obj_id" => $obj_id,
                     "title" => $object->getTitle(),
                     "permalink" => $permalink,
                     "current_page" => $tab['ref_id'] == $current_ref_id,
                     "order" => $sorting[$tab['ref_id']] ?? $index,
                     "root" => ($root_course['ref_id'] === $tab['ref_id']),
                     "cards" => count($cards),
+                    "cards_mandatory" => count($cards_mandatory),
                     "cards_completed" => count($cards_completed),
                     "completed" => $is_completed,
                 ];

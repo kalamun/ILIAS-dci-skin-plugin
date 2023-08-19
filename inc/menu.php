@@ -35,8 +35,9 @@ class dciSkin_menu {
     }
 
     if (strpos($html, "#COURSES_URI#") !== false) {
+      $current_course = dciSkin_tabs::getRootCourse($_GET['ref_id']);
       $user_courses = self::getCoursesOfUser($user->getId(), true);
-
+      
       if (count($user_courses) === 0) {
         $html = self::remove_element("#COURSES_URI#", $html);
 
