@@ -17,7 +17,7 @@ class dciSkin_menu {
     // URL SHORT CODES
     if (strpos($html, "#TRAINING_CENTER_URI#") !== false) {
       $centers = [];
-      foreach (self::getCoursesOfUser($user->getId(), true) as $user_course) {
+      foreach (self::getCoursesOfUser($user->getId(), false) as $user_course) {
         $center = $repositoryTree->getParentNodeData($user_course['ref_id']);
         if (!isset($centers[ $center['ref_id'] ])) {
           $centers[ $center['ref_id'] ] = $center;
@@ -36,13 +36,13 @@ class dciSkin_menu {
 
     if (strpos($html, "#COURSES_URI#") !== false) {
       $current_course = dciSkin_tabs::getRootCourse($_GET['ref_id']);
-      $user_courses = self::getCoursesOfUser($user->getId(), true);
-      
+      $user_courses = self::getCoursesOfUser($user->getId(), false);
+
       if (count($user_courses) === 0) {
         $html = self::remove_element("#COURSES_URI#", $html);
 
       } else if (count($user_courses) === 1) {
-        $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $user_courses[0]['ref_id']);
+        $ctrl->setParameterByClass("ilrepositorygui", "ref_id", array_values($user_courses)[0]['ref_id']);
         $my_courses_uri = $ctrl->getLinkTargetByClass("ilrepositorygui", "frameset");
         $html = str_replace("#COURSES_URI#", "/" . $my_courses_uri, $html);
         
@@ -231,39 +231,39 @@ class dciSkin_menu {
         $obj = ilObjectFactory::getInstanceByObjId($obj_id);
         $ref_id = ilObject::_getAllReferences($obj_id);
         if (is_array($ref_id) && count($ref_id)) {
-            $ref_id = array_pop($ref_id);
-            if (!$tree->isDeleted($ref_id)) {
-                $visible = !(empty($obj) || $obj->getOfflineStatus());
-                $active = ilObjCourseAccess::_isActivated($obj_id, $visible, false);
-                if ($active && $visible) {
-                    $references[$ref_id] = array(
-                        'ref_id' => $ref_id,
-                        'obj_id' => $obj_id,
-                        'title' => ilObject::_lookupTitle($obj_id)
-                    );
+          $ref_id = array_pop($ref_id);
+          if (!$tree->isDeleted($ref_id)) {
+                if (empty($obj)) continue;
+                if ($obj->getOfflineStatus()) continue;
+                if (!ilObjCourseAccess::_isActivated($obj_id, $visible, false)) continue;
 
-                    if ($a_add_path) {
-                        $path = array();
-                        foreach ($tree->getPathFull($ref_id) as $item) {
-                            $path[] = $item["title"];
-                        }
-                        // top level comes first
-                        if (count($path) === 2) {
-                            $path[0] = 0;
-                        } else {
-                            $path[0] = 1;
-                        }
-                        $references[$ref_id]["path_sort"] = implode("__", $path);
-                        array_shift($path);
-                        array_pop($path);
-                        if (!count($path)) {
-                            array_unshift($path, $repo_title);
-                        }
-                        $references[$ref_id]["path"] = implode(" &rsaquo; ", $path);
+                $references[$ref_id] = array(
+                    'ref_id' => $ref_id,
+                    'obj_id' => $obj_id,
+                    'title' => ilObject::_lookupTitle($obj_id)
+                );
+
+                if ($a_add_path) {
+                    $path = array();
+                    foreach ($tree->getPathFull($ref_id) as $item) {
+                        $path[] = $item["title"];
                     }
-
-                    $lp_obj_refs[$obj_id] = $ref_id;
+                    // top level comes first
+                    if (count($path) === 2) {
+                        $path[0] = 0;
+                    } else {
+                        $path[0] = 1;
+                    }
+                    $references[$ref_id]["path_sort"] = implode("__", $path);
+                    array_shift($path);
+                    array_pop($path);
+                    if (!count($path)) {
+                        array_unshift($path, $repo_title);
+                    }
+                    $references[$ref_id]["path"] = implode(" &rsaquo; ", $path);
                 }
+
+                $lp_obj_refs[$obj_id] = $ref_id;
             }
         }
     }
