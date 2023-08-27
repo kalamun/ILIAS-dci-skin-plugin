@@ -32,15 +32,20 @@ class dciSkin_accordion {
             // progress
             $progress_total = count($finder->query('.//div[contains(@class, "kalamun-card_progress")]', $node));
             $progress_completed = count($finder->query('.//div[contains(@class, "kalamun-card_progress completed")]', $node));
-            if ($progress_total > 0) {
-              $is_completed = $progress_completed >= $progress_total;
+            $is_completed = $progress_completed >= $progress_total;
 
+            if ($progress_total > 0) {
               $progress_icon = $dom->createElement('span');
               $progress_icon->setAttribute('class', 'icon-done');
               $progress = $dom->createElement('div', $progress_completed . "/" . $progress_total);
               $progress->setAttribute('class', 'accordion-progress' . ($is_completed ? ' completed' : ' not-completed'));
               if ($is_completed) $progress->insertBefore($progress_icon, $progress->firstChild);
               $heading->appendChild($progress);
+            }
+            
+            if (!$is_completed || $progress_total == 0) {
+              $content_wrapper = $finder->query('.//div[contains(@class, "il_VAccordionContentDef")]', $node)[0];
+              $content_wrapper->setAttribute('class', str_replace('ilAccHideContent', '', $content_wrapper->getAttribute('class')));
             }
             
             // toggle
