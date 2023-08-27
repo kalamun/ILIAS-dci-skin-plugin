@@ -101,7 +101,22 @@ class dciSkin_menu {
     $last_ul_offset = strrpos($html, '</ul>');
     $html = substr_replace($html, ob_get_clean(), $last_ul_offset, 0);
     $html = dciSkin_layout::apply_custom_placeholders($html);
-    return $html;
+
+    $dom = new DomDocument();
+    $internalErrors = libxml_use_internal_errors(true);
+    $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+    libxml_use_internal_errors($internalErrors);
+    $finder = new DomXPath($dom);
+
+    foreach ($finder->query('//form[contains(@id, "mm_search_form")]') as $menu_element) {
+      $div_container = $menu_element->parentNode->parentNode;
+      $li = $div_container->parentNode;
+      $li->appendChild($menu_element);
+      $li->removeChild($div_container);
+      $li->setAttribute('class', $li->getAttribute("class") . " search");
+    }
+
+    return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
   }
 
 
@@ -197,7 +212,7 @@ class dciSkin_menu {
   public static function getCoursesOfUser(
     int $a_user_id,
     bool $a_add_path = false
-): array {
+  ): array {
     global $DIC;
     $tree = $DIC->repositoryTree();
 
@@ -213,11 +228,12 @@ class dciSkin_menu {
 
     $references = $lp_obj_refs = array();
     foreach ($items as $obj_id) {
+        $obj = ilObjectFactory::getInstanceByObjId($obj_id);
         $ref_id = ilObject::_getAllReferences($obj_id);
         if (is_array($ref_id) && count($ref_id)) {
             $ref_id = array_pop($ref_id);
             if (!$tree->isDeleted($ref_id)) {
-                $visible = false;
+                $visible = !(empty($obj) || $obj->getOfflineStatus());
                 $active = ilObjCourseAccess::_isActivated($obj_id, $visible, false);
                 if ($active && $visible) {
                     $references[$ref_id] = array(
