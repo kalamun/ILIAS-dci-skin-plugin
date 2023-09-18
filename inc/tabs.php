@@ -30,7 +30,7 @@ class dciSkin_tabs
                         . ($tab['completed'] ? 'is-completed' : '')
                         . '"><a href="' . $tab['permalink'] . '">'
                         . '<span class="title">' . $tab['title'] . '</span>'
-                        . ($tab['cards_mandatory'] > 0 ? (
+                        . (
                         $tab['root'] ? (
                             $mandatory_cards_count > 0 ? '<span class="progress"><meter min="0" max="0" value=" ' . round(100 / $mandatory_cards_count * $completed_cards_count) . '"></meter></span>' : ''
                         ) : (
@@ -39,7 +39,7 @@ class dciSkin_tabs
                             . $tab['cards_completed'] . ' / ' . $tab['cards_mandatory']
                             . '</span>'
                         )
-                    ) : '')
+                        )
                         . '</a>';
                     if ($tab['current_page'] && !$tab['root']) {
                         $output .= '<div class="dci-page-navbar"></div>';

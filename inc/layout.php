@@ -25,6 +25,9 @@ class dciSkin_layout
 
         $html = str_replace("{BODY_CLASS}", implode(" ", $body_class), $html);
         $html = str_replace("{SKIN_URI}", "/Customizing/global/skin/dci", $html);
+        $html = str_replace("{DCI_HOMEPAGE_URL}", "/goto.php?target=root_1&client_id=default", $html);
+
+        $html = str_replace("{LANGUAGE_SELECTOR}", dciSkin_menu::get_language_selector(), $html);
 
         // short codes
         $name = $user->getFirstName();

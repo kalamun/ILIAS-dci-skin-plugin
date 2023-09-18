@@ -65,10 +65,8 @@ class dciSkin_menu {
     return $html;
   }
 
-  public static function apply_metabar($html) {
-    self::check_for_language_update();
-    $html = self::remove_empty_elements($html);
-
+  /* return language selector HTML code, currently used on layout.php */
+  public static function get_language_selector() {
     global $DIC;
     $language = $DIC->language();
 
@@ -77,29 +75,35 @@ class dciSkin_menu {
     $available_languages = $DIC->language()->getInstalledLanguages();
     $query_variables = parse_url($_SERVER['REQUEST_URI'])['query'];
 
+    $language_labels = [
+      "en" => "English",
+      "fr" => "Français",
+    ];
+
     ob_start();
 
     ?>
-    <li class="dci-mainbar-li language-selector" role="none">
-      <img src="{SKIN_URI}/images/flags/<?= strtolower($current_language); ?>.svg" alt="<?= $current_language; ?>" />
-      <div class="dci-mainbar-li-submenu">
-        <div class="il-maincontrols-slate dci-main-slate">
-          <?php
-          foreach ($available_languages as $language) {
-            ?>
-            <a href="?<?= $query_variables; ?>&set_language=<?= $language; ?>">
-              <img src="{SKIN_URI}/images/flags/<?= strtolower($language); ?>.svg" alt="<?= $language; ?>" />
-            </a>
-            <?php
-          }
-          ?>
-        </div>
-		  </div>
-    </li>
+    <div class="dci-language-selector">
+      <?php
+      foreach ($available_languages as $language) {
+        ?>
+        <a href="?<?= $query_variables; ?>&set_language=<?= $language; ?>" <?= $language == $current_language ? 'class="selected"' : ''; ?>>
+          <?= $language_labels[$language] ?? $language; ?>
+        </a>
+        <?php
+      }
+      ?>
+    </div>
     <?php
 
-    $last_ul_offset = strrpos($html, '</ul>');
-    $html = substr_replace($html, ob_get_clean(), $last_ul_offset, 0);
+    return ob_get_clean();
+  }
+
+  public static function apply_metabar($html) {
+    self::check_for_language_update();
+    $html = self::remove_empty_elements($html);
+
+    global $DIC;
     $html = dciSkin_layout::apply_custom_placeholders($html);
 
     $dom = new DomDocument();
@@ -116,7 +120,24 @@ class dciSkin_menu {
       $li->setAttribute('class', $li->getAttribute("class") . " search");
     }
 
-    return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+    $html = str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+
+    // always display inbox link
+    if (strpos($html, "icon-mail") === false) {
+      $inbox_link = "/ilias.php?baseClass=ilMailGUI";
+      $inbox_html = '<li class="dci-mainbar-li" role="none">
+      <a href="' . $inbox_link . '">
+      <button class="btn btn-bulky" role="menuitem" aria-haspopup="true">
+        <span class="glyph" aria-label="Notifications" role="img">
+          <span class="icon icon-mail" aria-hidden="true"></span>
+        </span>
+      </button>
+      </a>
+      </li>';
+      $html = substr_replace($html, $inbox_html . '<li ', strpos($html, '<li '), 4);
+    }
+
+    return $html;
   }
 
 
