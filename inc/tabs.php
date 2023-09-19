@@ -36,7 +36,7 @@ class dciSkin_tabs
                         ) : (
                             '<span class="progress' . ($tab['completed'] ? ' completed' : '') . '">'
                             . ($tab['completed'] ? '<span class="icon-done"></span>' : '')
-                            . $tab['cards_completed'] . ' / ' . $tab['cards_mandatory']
+                            . $tab['cards_completed'] . ' / ' . $tab['cards']
                             . '</span>'
                         )
                         )
@@ -127,7 +127,7 @@ class dciSkin_tabs
                 $cards = static::getCardsOnPage($obj_id);
                 $cards_completed = array_filter($cards, fn($card) => !!$mandatory_objects_status[$card['obj_id']]);
                 $cards_mandatory = array_filter($cards, fn($card) => isset($mandatory_objects_status[$card['obj_id']]));
-                $is_completed = count($cards_completed) === count($cards_mandatory);
+                $is_completed = count($cards_completed) === count($cards);
 
                 $tabs[] = [
                     "id" => $tab['ref_id'],
