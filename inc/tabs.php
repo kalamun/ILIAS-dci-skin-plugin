@@ -41,7 +41,7 @@ class dciSkin_tabs
                         )
                         )
                         . '</a>';
-                    if ($tab['current_page'] && !$tab['root']) {
+                    if ($tab['current_page']) {
                         $output .= '<div class="dci-page-navbar"></div>';
                     }
                     $output .= '</li>';
