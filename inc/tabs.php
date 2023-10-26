@@ -32,7 +32,7 @@ class dciSkin_tabs
                         . '<span class="title">' . $tab['title'] . '</span>'
                         . (
                         $tab['root'] ? (
-                            $mandatory_cards_count > 0 ? '<span class="progress"><meter min="0" max="0" value=" ' . round(100 / $mandatory_cards_count * $completed_cards_count) . '"></meter></span>' : ''
+                            $mandatory_cards_count > 0 ? '<span class="course-progress"><meter min="0" max="0" value=" ' . round(100 / $mandatory_cards_count * $completed_cards_count) . '"></meter></span>' : ''
                         ) : (
                             '<span class="progress' . ($tab['completed'] ? ' completed' : '') . '">'
                             . ($tab['completed'] ? '<span class="icon-done"></span>' : '')
