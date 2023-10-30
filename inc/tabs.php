@@ -96,6 +96,28 @@ class dciSkin_tabs
             return $tabs;
         }
 
+        $object = \ilObjectFactory::getInstanceByRefId($root_course['ref_id']);
+        $obj_id = $object->getId();
+        $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $root_course['ref_id']);
+        $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "frameset");
+
+        $tabs = [
+            [
+                "id" => $root_course['ref_id'],
+                "ref_id" => $root_course['ref_id'],
+                "obj_id" => $obj_id,
+                "title" => $root_course["title"],
+                "permalink" => $permalink,
+                "current_page" => $tab['ref_id'] == $current_ref_id,
+                "order" => 0,
+                "root" => true,
+                "cards" => 0,
+                "cards_mandatory" => 0,
+                "cards_completed" => 0,
+                "completed" => false,
+            ]
+        ];
+
         $sorting = \ilContainerSorting::lookupPositions($root_course['obj_id']);
         $mandatory_objects = \dciCourse::get_mandatory_objects($root_course['obj_id']);
         $mandatory_objects_status = [];
@@ -139,7 +161,7 @@ class dciSkin_tabs
                     "permalink" => $permalink,
                     "current_page" => $tab['ref_id'] == $current_ref_id,
                     "order" => $sorting[$tab['ref_id']] ?? $index,
-                    "root" => ($root_course['ref_id'] === $tab['ref_id']),
+                    "root" => false,
                     "cards" => count($cards),
                     "cards_mandatory" => count($cards_mandatory),
                     "cards_completed" => count($cards_completed),
