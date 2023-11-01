@@ -70,4 +70,50 @@ class dciSkin_layout
         return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
     }
 
+    public static function apply_custom_style($html) {
+        // style_parameter
+        // style_id
+        // class -> Accent
+        // parameter -> color
+        // value
+
+        // object_data
+        // obj_id
+        // where type="sty"
+
+        // SELECT * FROM `ilias_7`.`style_usage` WHERE (CONVERT(`obj_id` USING utf8) LIKE '%335%' OR CONVERT(`style_id` USING utf8) LIKE '%335%') 
+        global $DIC;
+        $style_tag = "";
+
+        $obj_id = $DIC->ctrl()->getContextObjId();
+        $style_id = ilObjStyleSheet::lookupObjectStyle($obj_id);
+        if (!empty($style_id)) {
+            $query = "SELECT * FROM style_parameter WHERE ";
+            $result = $DIC->database()->queryF("SELECT class, parameter, value FROM style_parameter WHERE style_id = %s AND (class='Accent' OR class='PageContainer')", ['integer'], [$style_id]);
+            foreach($DIC->database()->fetchAll($result) as $line) {
+                $style[$line['class']][$line['parameter']] = $line['value'];
+            }
+            
+            ob_start();
+            ?>
+            <style>
+                :root {
+                    <?php
+                    foreach($style as $class => $parameters) {
+                        foreach($parameters as $parameter => $value) {
+                            ?>--il-<?= $class; ?>-<?= $parameter; ?>: <?= $value; ?>;
+                            <?
+                        }
+                    }
+                    ?>
+                }
+            </style>
+            <?php
+            $style_tag = ob_get_clean();
+        }
+
+
+        $html = str_replace("<body", $style_tag . "\n<body", $html);
+        return $html;
+    }
 }
