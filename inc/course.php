@@ -28,7 +28,7 @@ class dciCourse {
                 $objects[] = [
                     "ref_id" => $row['item_id'],
                     "obj_id" => $obj_id,
-                    "completed" => ilLPStatusCollection::_hasUserCompleted($obj_id, $ilUser->getId()),
+                    //"completed" => ilLPStatusCollection::_hasUserCompleted($obj_id, $ilUser->getId()),
                 ];
             }
         }
