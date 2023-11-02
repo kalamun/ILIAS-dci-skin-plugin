@@ -18,7 +18,11 @@ class dciSkin_footer {
         foreach ($finder->query('//nav[contains(@class, "il-mainbar")]') as $node) {
         }
         
-        return $dom->saveHTML();
+        $html = str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+        $html = str_replace("<html><body>", "", $html);
+        $html = str_replace("</body></html>", "", $html);
+    
+        return $html;
     }
 
 }

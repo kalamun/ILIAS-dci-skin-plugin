@@ -137,6 +137,8 @@ class dciSkin_menu {
       $html = substr_replace($html, $inbox_html . '<li ', strpos($html, '<li '), 4);
     }
 
+    $html = str_replace("<html><body>", "", $html);
+    $html = str_replace("</body></html>", "", $html);
     return $html;
   }
 
@@ -178,7 +180,11 @@ class dciSkin_menu {
       }
     }
 
-    return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+    $html = str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+    $html = str_replace("<html><body>", "", $html);
+    $html = str_replace("</body></html>", "", $html);
+
+    return $html;
   }
 
 
@@ -193,7 +199,11 @@ class dciSkin_menu {
       $menu_element->parentNode->removeChild($menu_element);
     }
 
-    return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+    $html = str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+    $html = str_replace("<html><body>", "", $html);
+    $html = str_replace("</body></html>", "", $html);
+
+    return $html;
   }
 
 
@@ -222,7 +232,11 @@ class dciSkin_menu {
     $submenu->appendChild($inner);
     $menu_element->appendChild($submenu);
 
-    return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+    $html = str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+    $html = str_replace("<html><body>", "", $html);
+    $html = str_replace("</body></html>", "", $html);
+
+    return $html;
   }
 
 

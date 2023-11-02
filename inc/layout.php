@@ -74,8 +74,14 @@ class dciSkin_layout
         global $DIC;
         $style_tag = "";
 
-        $obj_id = $DIC->ctrl()->getContextObjId();
+        if (!empty($_GET['ref_id'])) {
+            $root_id = dciSkin_tabs::getRootCourse($_GET['ref_id']);
+            $obj_id = $root_id['obj_id'];
+        } else {
+            $obj_id = $DIC->ctrl()->getContextObjId();
+        }
         $style_id = ilObjStyleSheet::lookupObjectStyle($obj_id);
+
         if (!empty($style_id)) {
             $query = "SELECT * FROM style_parameter WHERE ";
             $result = $DIC->database()->queryF("SELECT class, parameter, value FROM style_parameter WHERE style_id = %s AND (class='Accent' OR class='PageContainer')", ['integer'], [$style_id]);
@@ -101,8 +107,7 @@ class dciSkin_layout
             $style_tag = ob_get_clean();
         }
 
-
-        $html = str_replace("</head>", $style_tag . "\n</head>", $html);
+        $html .= $style_tag;
         return $html;
     }
 }
