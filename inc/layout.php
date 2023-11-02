@@ -102,7 +102,7 @@ class dciSkin_layout
         }
 
 
-        $html = str_replace("<body", $style_tag . "\n<body", $html);
+        $html = str_replace("</head>", $style_tag . "\n</head>", $html);
         return $html;
     }
 }
