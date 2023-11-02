@@ -71,17 +71,6 @@ class dciSkin_layout
     }
 
     public static function apply_custom_style($html) {
-        // style_parameter
-        // style_id
-        // class -> Accent
-        // parameter -> color
-        // value
-
-        // object_data
-        // obj_id
-        // where type="sty"
-
-        // SELECT * FROM `ilias_7`.`style_usage` WHERE (CONVERT(`obj_id` USING utf8) LIKE '%335%' OR CONVERT(`style_id` USING utf8) LIKE '%335%') 
         global $DIC;
         $style_tag = "";
 
@@ -102,7 +91,7 @@ class dciSkin_layout
                     foreach($style as $class => $parameters) {
                         foreach($parameters as $parameter => $value) {
                             ?>--il-<?= $class; ?>-<?= $parameter; ?>: <?= $value; ?>;
-                            <?
+                            <?php
                         }
                     }
                     ?>
