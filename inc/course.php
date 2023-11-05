@@ -84,4 +84,21 @@ class dciCourse {
         }
     }
 
+
+    /* return progress informations for the given object */
+    public static function get_obj_progress($obj_id, $user_id) {
+        global $DIC;
+        $ilDB = $DIC->database();
+
+        $sql = "SELECT * FROM cp_node as a JOIN cmi_node as b ON a.cp_node_id = b.cp_node_id WHERE a.slm_id = " . $ilDB->quote($obj_id, "integer") . " AND b.user_id = " . $ilDB->quote($user_id, "integer") . "";
+        $res = $ilDB->query($sql);
+        
+        $output = [];
+        while ($entry = $res->fetch(ilDBConstants::FETCHMODE_OBJECT)) {
+            $output[] = $entry;
+        }
+        return $output;
+    }
+
+
 }
