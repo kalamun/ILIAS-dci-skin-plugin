@@ -212,7 +212,6 @@ class dciSkin_tabs
         foreach ($ids as $i => $id) {
             $object = \ilObjectFactory::getInstanceByRefId($id['ref_id']);
             
-var_dump($object->getType(), $id, $object->getTitle()); echo '<br>';
             // filter only allowed item types
             if (!in_array($object->getType(), ["lm", "sahs", "file", "htlm", "tst"])) {
                 unset($ids[$i]);
@@ -232,7 +231,7 @@ var_dump($object->getType(), $id, $object->getTitle()); echo '<br>';
                 $ids[$i]['completed'] = $lp_completed;
             }
         }
-if (strpos($page_content, "Card") !== false) { die(); }
+
         return $ids;
     }
 
