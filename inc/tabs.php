@@ -195,24 +195,24 @@ class dciSkin_tabs
             return $ids;
         }
 
-        if (strpos($page_content, "Card") !== false) { echo htmlentities($page_content); die(); }
-
+        
         $dom = new DomDocument();
         $dom->version = "1.0";
         $dom->encoding = "utf-8";
         $internalErrors = libxml_use_internal_errors(true);
         $dom->loadXML($page_content);
         libxml_use_internal_errors($internalErrors);
-
+        
         $finder = new DOMXPath($dom);
         foreach ($finder->query('//Plugged[contains(@PluginName, "Card")]') as $card) {
             $property_ref_id = $finder->query('./PluggedProperty[contains(@Name, "ref_id")]', $card)[0];
             $ids[] = ["ref_id" => (int) $property_ref_id->textContent];
         }
-
+        
         foreach ($ids as $i => $id) {
             $object = \ilObjectFactory::getInstanceByRefId($id['ref_id']);
-
+            
+var_dump($object->getType(), $id, $object->getTitle()); echo '<br>';
             // filter only allowed item types
             if (!in_array($object->getType(), ["lm", "sahs", "file", "htlm", "tst"])) {
                 unset($ids[$i]);
@@ -232,7 +232,7 @@ class dciSkin_tabs
                 $ids[$i]['completed'] = $lp_completed;
             }
         }
-
+die();
         return $ids;
     }
 
