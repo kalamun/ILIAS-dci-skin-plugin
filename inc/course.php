@@ -25,10 +25,13 @@ class dciCourse {
                 $obj = ilObjectFactory::getInstanceByRefId($row['item_id']);
                 $obj_id = $obj->getId();
 
+                $obj_lp = ilObjectLP::getInstance($obj_id);
+                $mode = $obj_lp->getCurrentMode();
+
                 $objects[] = [
                     "ref_id" => $row['item_id'],
                     "obj_id" => $obj_id,
-                    "completed" => ilLPStatusCollection::_hasUserCompleted($obj_id, $ilUser->getId()),
+                    "completed" => $mode <= 6 ? ilLPStatusCollection::_hasUserCompleted($obj_id, $ilUser->getId()) : false,
                 ];
             }
         }
