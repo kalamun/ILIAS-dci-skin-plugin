@@ -106,7 +106,7 @@ class dciSkin_tabs
                 "id" => $root_course['ref_id'],
                 "ref_id" => $root_course['ref_id'],
                 "obj_id" => $obj_id,
-                "title" => $root_course["title"],
+                "title" => "" /* $root_course["title"] */,
                 "permalink" => $permalink,
                 "current_page" => $tab['ref_id'] == $current_ref_id,
                 "order" => 0,
@@ -119,6 +119,7 @@ class dciSkin_tabs
         ];
 
         $sorting = \ilContainerSorting::lookupPositions($root_course['obj_id']);
+
         $mandatory_objects = \dciCourse::get_mandatory_objects($root_course['obj_id']);
         $mandatory_objects_status = [];
         foreach($mandatory_objects as $obj) {
@@ -152,12 +153,13 @@ class dciSkin_tabs
                 $cards_completed = array_filter($cards, fn($card) => !!$mandatory_objects_status[$card['obj_id']]);
                 $cards_mandatory = array_filter($cards, fn($card) => isset($mandatory_objects_status[$card['obj_id']]));
                 $is_completed = count($cards_completed) === count($cards);
+                $title = $obj_id != $root_course['obj_id'] ? $object->getTitle() : static::getH1($obj_id);
 
                 $tabs[] = [
                     "id" => $tab['ref_id'],
                     "ref_id" => $tab['ref_id'],
                     "obj_id" => $obj_id,
-                    "title" => $object->getTitle(),
+                    "title" => $title,
                     "permalink" => $permalink,
                     "current_page" => $tab['ref_id'] == $current_ref_id,
                     "order" => $sorting[$tab['ref_id']] ?? $index,
@@ -230,6 +232,38 @@ class dciSkin_tabs
         }
 
         return $ids;
+    }
+
+    public static function getH1($obj_id)
+    {
+        global $DIC;
+        $db = $DIC->database();
+        $user = $DIC->user();
+        $ids = [];
+
+        $sql = "SELECT DISTINCT content FROM page_object WHERE parent_id = %s AND active = %s";
+        $res = $db->queryF(
+            $sql,
+            ['integer', 'integer'],
+            [$obj_id, 1]
+        );
+        $page_content = $db->fetchAssoc($res)["content"];
+        if (empty($page_content)) {
+            return $ids;
+        }
+
+        $dom = new DomDocument();
+        $dom->version = "1.0";
+        $dom->encoding = "utf-8";
+        $internalErrors = libxml_use_internal_errors(true);
+        $dom->loadXML($page_content);
+        libxml_use_internal_errors($internalErrors);
+
+        $finder = new DOMXPath($dom);
+        $first_h1 = $finder->query('//Paragraph[contains(@Characteristic, "Headline1")]')[0];
+        if (!empty($first_h1)) {
+            return $first_h1->textContent;
+        }
     }
 
 }

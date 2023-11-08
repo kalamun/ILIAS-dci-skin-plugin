@@ -80,6 +80,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
         // custom placeholders
         $html = dciSkin_layout::apply_custom_placeholders($html);
         $html = dciSkin_layout::apply_custom_style($html);
+        $html = dciSkin_layout::apply_cover($html);
       }
       
       /* menu */

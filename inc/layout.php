@@ -110,4 +110,93 @@ class dciSkin_layout
         $html .= $style_tag;
         return $html;
     }
+
+    public static function apply_cover($html) {
+/*         const rowWrapper = ilContentContainer.querySelector('body.is_course .row');
+        if (rowWrapper) {
+            const cover = ilContentContainer.querySelector('#il_center_col .dci-cover:first-of-type');
+            if (cover) {
+                const coverWrapper = document.querySelector('.dci-course-cover') || document.createElement('div');
+                coverWrapper.className = "dci-course-cover";
+                coverWrapper.appendChild(cover);
+                //rowWrapper.parentNode.insertBefore(coverWrapper, rowWrapper);
+            }
+ */
+
+        $dom = new DomDocument();
+        $internalErrors = libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+        libxml_use_internal_errors($internalErrors);
+        $finder = new DomXPath($dom);
+
+        // remove card container
+        $cover = $finder->query('//div[contains(@id, "il_center_col")]//div[contains(@class, "dci-cover")]');
+        $cover_wrapper = $finder->query('//div[contains(@class, "dci-course-cover")]');
+        //var_dump($cover[0], $cover_wrapper[0]); die();
+        if (!empty($cover_wrapper[0]) && !empty($cover[0])) {
+            $cover_wrapper[0]->appendChild($cover[0]);
+            //$cover[0]->parentNode->removeChild($cover[0]);
+        }
+
+        return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+    }
+
+    public static function getCoverFromRootPage($obj_id)
+    {
+/*         global $DIC;
+        $db = $DIC->database();
+        $user = $DIC->user();
+        $current_ref_id = $_GET['ref_id'];
+        $root_page = dciSkin_tabs::getRootCourse($current_ref_id);
+
+        $sql = "SELECT DISTINCT content FROM page_object WHERE parent_id = %s AND active = %s";
+        $res = $db->queryF(
+            $sql,
+            ['integer', 'integer'],
+            [$obj_id, 1]
+        );
+        $page_content = $db->fetchAssoc($res)["content"];
+        if (empty($page_content)) {
+            return $ids;
+        }
+
+        $dom = new DomDocument();
+        $dom->version = "1.0";
+        $dom->encoding = "utf-8";
+        $internalErrors = libxml_use_internal_errors(true);
+        $dom->loadXML($page_content);
+        libxml_use_internal_errors($internalErrors);
+
+        $finder = new DOMXPath($dom);
+        foreach ($finder->query('//Plugged[contains(@PluginName, "Card")]') as $card) {
+            $property_ref_id = $finder->query('./PluggedProperty[contains(@Name, "ref_id")]', $card)[0];
+            $ids[] = ["ref_id" => (int) $property_ref_id->textContent];
+        }
+
+        foreach ($ids as $i => $id) {
+            $object = \ilObjectFactory::getInstanceByRefId($id['ref_id']);
+
+            // filter only allowed item types
+            if (!in_array($object->getType(), ["lm", "sahs", "file", "htlm", "tst"])) {
+                unset($ids[$i]);
+                continue;
+            }
+
+            $obj_id = $object->getId();
+
+            $already_exists = array_search($id['ref_id'], array_column($ids, 'ref_id'));
+            if (isset($already_exists['completed'])) {
+                $ids[$i] = $already_exists;
+            } else {
+                $lp_completed = ilLPStatus::_hasUserCompleted($obj_id, $user->getId());
+
+                $ids[$i]['type'] = $object->getType();
+                $ids[$i]['obj_id'] = $obj_id;
+                $ids[$i]['completed'] = $lp_completed;
+            }
+        }
+
+        return $ids; */
+    }
+
 }
