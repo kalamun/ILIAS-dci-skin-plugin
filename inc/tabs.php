@@ -195,7 +195,7 @@ class dciSkin_tabs
             return $ids;
         }
 
-        if (strpos($page_content, "Card") !== false) echo htmlentities($page_content); die();
+        if (strpos($page_content, "Card") !== false) { echo htmlentities($page_content); die(); }
 
         $dom = new DomDocument();
         $dom->version = "1.0";
