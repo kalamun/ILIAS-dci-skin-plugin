@@ -195,6 +195,8 @@ class dciSkin_tabs
             return $ids;
         }
 
+        echo htmlentities($page_content); die();
+
         $dom = new DomDocument();
         $dom->version = "1.0";
         $dom->encoding = "utf-8";
