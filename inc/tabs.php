@@ -232,7 +232,7 @@ var_dump($object->getType(), $id, $object->getTitle()); echo '<br>';
                 $ids[$i]['completed'] = $lp_completed;
             }
         }
-die();
+if (strpos($page_content, "Card") !== false) { die(); }
         return $ids;
     }
 
