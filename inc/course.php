@@ -49,15 +49,14 @@ class dciCourse {
         return $ilDB->numRows($result) > 0;
     }
 
-    public static function update_mandatory_object($obj_id, $course_id, $mandatory) {
+    public static function update_mandatory_object($course_id, $obj_id, $mandatory) {
         global $DIC;
         $ilDB = $DIC->database();
 
         if($mandatory) {
-            $sql = "SELECT * FROM `ut_lp_settings` WHERE obj_id=" . $ilDB->quote($course_id, "integer") . " LIMIT 1";
+            $sql = "SELECT * FROM `ut_lp_settings` WHERE obj_id=" . $ilDB->quote($course_id, "integer") . " AND obj_type='crs' LIMIT 1";
             $result = $ilDB->query($sql);
-            $row = $ilDB->fetchAssoc($result);
-            var_dump($row); die();
+
             if ($ilDB->numRows($result) == 0) {
                 $sql = "INSERT INTO `ut_lp_settings` (obj_id, obj_type, u_mode, visits) "
                         ." VALUES(" . $ilDB->quote($course_id, "integer") . ", 'crs', " . $ilDB->quote(ilLPObjSettings::LP_MODE_COLLECTION) . ", 0)";
