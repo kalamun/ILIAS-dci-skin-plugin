@@ -56,10 +56,10 @@ class dciCourse {
         if($mandatory) {
             $sql = "SELECT * FROM `ut_lp_settings` WHERE obj_id=" . $ilDB->quote($course_id, "integer") . " AND obj_type='crs' LIMIT 1";
             $result = $ilDB->query($sql);
-var_dump($sql, $ilDB->numRows($result)); die();
             if ($ilDB->numRows($result) == 0) {
                 $sql = "INSERT INTO `ut_lp_settings` (obj_id, obj_type, u_mode, visits) "
-                        ." VALUES(" . $ilDB->quote($course_id, "integer") . ", 'crs', " . $ilDB->quote(ilLPObjSettings::LP_MODE_COLLECTION) . ", 0)";
+                    ." VALUES(" . $ilDB->quote($course_id, "integer") . ", 'crs', " . $ilDB->quote(ilLPObjSettings::LP_MODE_COLLECTION) . ", 0)";
+                var_dump($sql); die();
                 $result = $ilDB->query($sql);
             } else {
                 $sql = "UPDATE `ut_lp_settings` SET u_mode=" . $ilDB->quote(ilLPObjSettings::LP_MODE_COLLECTION) . " WHERE "
