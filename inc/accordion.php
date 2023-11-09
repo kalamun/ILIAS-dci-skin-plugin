@@ -38,7 +38,7 @@ class dciSkin_accordion {
           $progress_icon->setAttribute('class', 'icon-done');
           $progress = $dom->createElement('div', $progress_completed . "/" . $progress_total);
           $progress->setAttribute('class', 'accordion-progress' . ($is_completed ? ' completed' : ' not-completed'));
-          if ($is_completed) $progress->insertBefore($progress_icon, $progress->firstChild);
+          if ($is_completed) $progress->insertBefore($progress_icon, $progress->lastChild);
           $heading->appendChild($progress);
         }
         
