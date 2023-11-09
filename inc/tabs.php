@@ -106,7 +106,7 @@ class dciSkin_tabs
                 "id" => $root_course['ref_id'],
                 "ref_id" => $root_course['ref_id'],
                 "obj_id" => $obj_id,
-                "title" => "" /* $root_course["title"] */,
+                "title" => "Progress status" /* $root_course["title"] */,
                 "permalink" => $permalink,
                 "current_page" => $tab['ref_id'] == $current_ref_id,
                 "order" => 0,
