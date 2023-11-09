@@ -84,9 +84,9 @@ class dciSkin_layout
 
         if (!empty($style_id)) {
             $query = "SELECT * FROM style_parameter WHERE ";
-            $result = $DIC->database()->queryF("SELECT class, parameter, value FROM style_parameter WHERE style_id = %s AND (class='Accent' OR class='PageContainer')", ['integer'], [$style_id]);
+            $result = $DIC->database()->queryF("SELECT class, parameter, value FROM style_parameter WHERE style_id = %s AND (class='Accent' OR class='PageContainer' OR class='HAccordICntr')", ['integer'], [$style_id]);
             foreach($DIC->database()->fetchAll($result) as $line) {
-                $style[$line['class']][$line['parameter']] = $line['value'];
+                if (substr($line['value'], 0, 1) !== "!") $style[$line['class']][$line['parameter']] = $line['value'];
             }
             
             ob_start();
