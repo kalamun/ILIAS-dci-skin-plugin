@@ -59,7 +59,6 @@ class dciCourse {
             if ($ilDB->numRows($result) == 0) {
                 $sql = "INSERT INTO `ut_lp_settings` (obj_id, obj_type, u_mode, visits) "
                     ." VALUES(" . $ilDB->quote($course_id, "integer") . ", 'crs', " . $ilDB->quote(ilLPObjSettings::LP_MODE_COLLECTION) . ", 0)";
-                var_dump($sql); die();
                 $result = $ilDB->query($sql);
             } else {
                 $sql = "UPDATE `ut_lp_settings` SET u_mode=" . $ilDB->quote(ilLPObjSettings::LP_MODE_COLLECTION) . " WHERE "
