@@ -41,15 +41,15 @@ class dciCourse {
 
 
     /* return true if the given object is mandatory to consider the course as completed */
-    public static function object_is_mandatory($obj_id, $course_id) {
+    public static function object_is_mandatory($ref_id, $course_id) {
         global $DIC;
         $ilDB = $DIC->database();
-        $sql = "SELECT * FROM `ut_lp_collections` WHERE obj_id=" . $ilDB->quote($course_id, "integer") . " AND item_id=" . $ilDB->quote($obj_id, "integer") . " AND active=1 AND lpmode=" . $ilDB->quote(ilLPObjSettings::LP_MODE_COLLECTION) . " LIMIT 1";
+        $sql = "SELECT * FROM `ut_lp_collections` WHERE obj_id=" . $ilDB->quote($course_id, "integer") . " AND item_id=" . $ilDB->quote($ref_id, "integer") . " AND active=1 AND lpmode=" . $ilDB->quote(ilLPObjSettings::LP_MODE_COLLECTION) . " LIMIT 1";
         $result = $ilDB->query($sql);
         return $ilDB->numRows($result) > 0;
     }
 
-    public static function update_mandatory_object($course_id, $obj_id, $mandatory) {
+    public static function update_mandatory_object($course_id, $ref_id, $mandatory) {
         global $DIC;
         $ilDB = $DIC->database();
 
@@ -68,21 +68,21 @@ class dciCourse {
             }
         }
         
-        $sql = "SELECT * FROM `ut_lp_collections` WHERE obj_id=" . $ilDB->quote($obj_id, "integer") . " AND item_id=" . $ilDB->quote($course_id, "integer") . " LIMIT 1";
+        $sql = "SELECT * FROM `ut_lp_collections` WHERE obj_id=" . $ilDB->quote($course_id, "integer") . " AND item_id=" . $ilDB->quote($ref_id, "integer") . " LIMIT 1";
         $result = $ilDB->query($sql);
         
         if ($mandatory) {
             if ($ilDB->numRows($result) == 0) {
                 $sql = "INSERT INTO `ut_lp_collections` (obj_id, item_id, grouping_id, num_obligatory, active, lpmode) "
-                        ." VALUES(" . $ilDB->quote($obj_id, "integer") . ", " . $ilDB->quote($course_id, "integer") . ", 0, 0, 1," . $ilDB->quote(ilLPObjSettings::LP_MODE_COLLECTION) . ")";
+                        ." VALUES(" . $ilDB->quote($course_id, "integer") . ", " . $ilDB->quote($ref_id, "integer") . ", 0, 0, 1," . $ilDB->quote(ilLPObjSettings::LP_MODE_COLLECTION) . ")";
                 $result = $ilDB->query($sql);
             } else {
                 $sql = "UPDATE `ut_lp_collections` SET active=1, lpmode=" . $ilDB->quote(ilLPObjSettings::LP_MODE_COLLECTION) . " WHERE "
-                        ."obj_id=" . $ilDB->quote($obj_id, "integer") . " AND item_id=" . $ilDB->quote($course_id, "integer") . " LIMIT 1";
+                        ."obj_id=" . $ilDB->quote($course_id, "integer") . " AND item_id=" . $ilDB->quote($ref_id, "integer") . " LIMIT 1";
                 $result = $ilDB->query($sql);
             }
         } else {
-            $sql = "DELETE FROM `ut_lp_collections` WHERE obj_id=" . $ilDB->quote($obj_id, "integer") . " AND item_id=" . $ilDB->quote($course_id, "integer") . " LIMIT 1";
+            $sql = "DELETE FROM `ut_lp_collections` WHERE obj_id=" . $ilDB->quote($course_id, "integer") . " AND item_id=" . $ilDB->quote($ref_id, "integer") . " LIMIT 1";
             $result = $ilDB->query($sql);
         }
     }
