@@ -11,33 +11,20 @@ class dciSkin_tabs
     {
         if (strpos($html, "{DCI_COURSE_MENU}") !== false) {
             $tabs = static::getCourseTabs();
-            $output = '<div class="dci-course-tabs-inner">';
-            $output .= static::print_tabs_node($tabs);
-            $output .= '</div>';
+            $output = "";
 
-            $html = str_replace("{DCI_COURSE_MENU}", $output, $html);
-        }
+            if (count($tabs) > 0) {
+                $output .= '<div class="dci-course-tabs-inner"><ul>';
 
-        return $html;
-    }
+                $mandatory_cards_count = 0;
+                $completed_cards_count = 0;
+                foreach ($tabs as $page) {
+                    $mandatory_cards_count += $page['cards_mandatory'];
+                    $completed_cards_count += $page['cards_completed'];
+                }
 
-    public static function print_tabs_node($tabs) {
-        $output = "";
-
-        if (count($tabs) > 0) {
-            $output .= '<ul>';
-
-            $mandatory_cards_count = 0;
-            $completed_cards_count = 0;
-            foreach ($tabs as $page) {
-                $mandatory_cards_count += $page['cards_mandatory'];
-                $completed_cards_count += $page['cards_completed'];
-            }
-
-            foreach ($tabs as $tab) {
-                if ($mandatory_cards_count == 0 && $tab['root']) {
-                    $output .= "";
-                } else {
+                foreach ($tabs as $tab) {
+			if ($tab['root'] && $mandatory_cards_count == 0) continue;
                     $output .= '<li class="'
                         . ($tab['current_page'] ? 'selected' : '') . ' '
                         . ($tab['root'] ? 'is-root' : '') . ' '
@@ -57,17 +44,18 @@ class dciSkin_tabs
                         )
                         )
                         . '</a>';
-                    if ($tab['current_page'] && $tab['show_anchors']) {
+                    if ($tab['current_page']) {
                         $output .= '<div class="dci-page-navbar"></div>';
                     }
-                    $output .= static::print_tabs_node($tab['childs']);
                     $output .= '</li>';
                 }
+                $output .= '</ul></div>';
             }
-            $output .= '</ul>';
+
+            $html = str_replace("{DCI_COURSE_MENU}", $output, $html);
         }
 
-        return $output;
+        return $html;
     }
 
     /**
@@ -96,22 +84,40 @@ class dciSkin_tabs
      */
     public static function getCourseTabs($ref_id = null)
     {
-        $current_ref_id = $ref_id ?? $_GET['ref_id'];
-        $root_course = static::getRootCourse($current_ref_id);
-
-        $tabs = static::getChildArray($root_course['ref_id'], $current_ref_id);
-        return $tabs;
-    }
-
-    public static function getChildArray($ref_id, $current_ref_id) {
         global $DIC;
         $ctrl = $DIC->ctrl();
         $tree = $DIC->repositoryTree();
 
         $tabs = [];
-        $childs = [];
+        $current_ref_id = $ref_id ?? $_GET['ref_id'];
 
         $root_course = static::getRootCourse($current_ref_id);
+
+        if (!$root_course['ref_id']) {
+            return $tabs;
+        }
+
+        $object = \ilObjectFactory::getInstanceByRefId($root_course['ref_id']);
+        $obj_id = $object->getId();
+        $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $root_course['ref_id']);
+        $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "frameset");
+
+        $tabs = [
+            [
+                "id" => $root_course['ref_id'],
+                "ref_id" => $root_course['ref_id'],
+                "obj_id" => $obj_id,
+                "title" => "Progress status" /* $root_course["title"] */,
+                "permalink" => $permalink,
+                "current_page" => $tab['ref_id'] == $current_ref_id,
+                "order" => 0,
+                "root" => true,
+                "cards" => 0,
+                "cards_mandatory" => 0,
+                "cards_completed" => 0,
+                "completed" => false,
+            ]
+        ];
 
         $sorting = \ilContainerSorting::lookupPositions($root_course['obj_id']);
 
@@ -121,39 +127,15 @@ class dciSkin_tabs
             $mandatory_objects_status[$obj['obj_id']] = $obj['completed'];
         }
 
-        
-        if ($ref_id == $root_course['ref_id']) {
-            $tabs = [
-                [
-                    "id" => $root_course['ref_id'],
-                    "ref_id" => $root_course['ref_id'],
-                    "obj_id" => $obj_id,
-                    "title" => "Progress status" /* $root_course["title"] */,
-                    "permalink" => $permalink,
-                    "current_page" => $tab['ref_id'] == $current_ref_id,
-                    "order" => 0,
-                    "root" => true,
-                    "cards" => 0,
-                    "cards_mandatory" => 0,
-                    "cards_completed" => 0,
-                    "show_anchors" => false,
-                    "childs" => [],
-                    "completed" => false,
-                ]
-            ];
-        }
-            
-        $childs = $tree->getChilds($ref_id);
+        $childs = $tree->getChilds($root_course['ref_id']);
         if (count($childs) > 0) {
-/*             if ($ref_id == $root_course['ref_id']) {
-                array_unshift($childs, [
-                    "type" => "fold",
-                    "ref_id" => $root_course['ref_id'],
-                ]);
-            }
- */
-            foreach ($childs as $index => $tab) {
 
+            array_unshift($childs, [
+                "type" => "fold",
+                "ref_id" => $root_course['ref_id'],
+            ]);
+
+            foreach ($childs as $index => $tab) {
                 if ($tab["type"] !== "fold") {
                     continue;
                 }
@@ -174,11 +156,6 @@ class dciSkin_tabs
                 $is_completed = count($cards_completed) === count($cards);
                 $title = $obj_id != $root_course['obj_id'] ? $object->getTitle() : static::getH1($obj_id);
 
-                $childs = [];
-                if ($root_course['ref_id'] !== $tab['ref_id']) {
-                    $childs = static::getChildArray($tab['ref_id'], $current_ref_id);
-                }
-
                 $tabs[] = [
                     "id" => $tab['ref_id'],
                     "ref_id" => $tab['ref_id'],
@@ -192,11 +169,11 @@ class dciSkin_tabs
                     "cards_mandatory" => count($cards_mandatory),
                     "cards_completed" => count($cards_completed),
                     "completed" => $is_completed,
-                    "show_anchors" => count($childs) == 0 && $tab['parent'] == $root_course['ref_id'],
-                    "childs" => $childs,
                 ];
             }
         }
+
+        usort($tabs, fn($a, $b) => $a["order"] - $b["order"]);
 
         return $tabs;
     }
