@@ -82,14 +82,12 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
         $html = dciSkin_layout::apply_custom_style($html);
         $html = dciSkin_layout::apply_cover($html);
       }
-      
-      if($a_part == "template_get" && strpos($a_par["tpl_id"], "standardpage.html") !== false) {
-        /* THE HTML PAGE!!!
-        print_r(htmlentities($a_par["html"]));
-        die();
-        */
-      }
 
+      /* login */
+      if($a_part == "template_add" && strpos($a_par["tpl_id"], "tpl.login.html") !== false) {
+        $html = dciSkin_layout::add_login_thumbnail($html);
+      }
+      
       /* menu */
       if($a_part == "template_get" && $a_par["tpl_id"] == "src/UI/templates/default/MainControls/tpl.mainbar.html") {
         $html = dciSkin_menu::apply_mainbar($html);
