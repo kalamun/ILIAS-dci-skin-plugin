@@ -83,13 +83,6 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
         $html = dciSkin_layout::apply_cover($html);
       }
       
-      if($a_part == "template_get" && strpos($a_par["tpl_id"], "standardpage.html") !== false) {
-        /* THE HTML PAGE!!!
-        print_r(htmlentities($a_par["html"]));
-        die();
-        */
-      }
-
       /* menu */
       if($a_part == "template_get" && $a_par["tpl_id"] == "src/UI/templates/default/MainControls/tpl.mainbar.html") {
         $html = dciSkin_menu::apply_mainbar($html);
@@ -99,7 +92,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
       }
 
       /* accordion */
-      if($a_part == "template_get" && $a_par["tpl_id"] == "Services/COPage/tpl.page.html" && strpos($html, "ilc_va_icntr_VAccordICntr") !== false) {
+      if($a_part == "template_get" && $a_par["tpl_id"] == "Services/COPage/tpl.page.html" && strpos($html, "ilc_va_ihcap_VAccordIHeadCap") !== false) {
         $html = dciSkin_accordion::apply($html);
       }
       

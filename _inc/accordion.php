@@ -13,12 +13,12 @@ class dciSkin_accordion {
     libxml_use_internal_errors($internalErrors);
     $finder = new DomXPath($dom);
 
-    foreach ($finder->query('//div[contains(@class, "ilc_va_icntr_VAccordICntr")]') as $node) {
+    foreach ($finder->query('//div[contains(@class, "cntr_VAccordICntr")]') as $node) {
       $node->setAttribute('class', $node->getAttribute('class') . ' dci-accordion');
       
       // heading
       $heading_wrapper = $finder->query('.//div[contains(@class, "ilc_va_ihead_VAccordIHead")]', $node)[0];
-      $heading_wrapper->setAttribute('class', $heading_wrapper->getAttribute('class') . ' dci-accordion-heading');
+      $heading_wrapper->setAttribute('class', 'dci-accordion-heading');
       $heading = $finder->query('.//div', $heading_wrapper)[0];
 
       if ($heading) {

@@ -17,13 +17,10 @@ class dciCourse {
 
         $objects = [];
 
-        if (!ilLPObjSettings::_lookupDBMode($obj_id) || ilLPObjSettings::_lookupDBMode($obj_id) == ilLPObjSettings::LP_MODE_COLLECTION) {
+        if (ilLPObjSettings::_lookupDBMode($obj_id) == ilLPObjSettings::LP_MODE_COLLECTION) {
             $sql = "SELECT * FROM `ut_lp_collections` WHERE obj_id=" . $ilDB->quote($obj_id, "integer") . " AND active=1 AND lpmode=" . $ilDB->quote(ilLPObjSettings::LP_MODE_COLLECTION);
             $result = $ilDB->query($sql);
-//            var_dump($sql);
             while ($row = $ilDB->fetchAssoc($result)) {
-//                var_dump($row);
-                
                 $ref_id = $row['item_id'];
                 $obj = ilObjectFactory::getInstanceByRefId($row['item_id']);
                 $obj_id = $obj->getId();
@@ -37,7 +34,6 @@ class dciCourse {
                     "completed" => $mode <= 6 ? ilLPStatusCollection::_hasUserCompleted($obj_id, $ilUser->getId()) : false,
                 ];
             }
-//            die();
         }
 
         return $objects;
