@@ -47,8 +47,6 @@ class dciSkin_tabs
             $completed_cards_count = self::count_cards_by_status($tabs, "completed");
 
             foreach ($tabs as $tab) {
-			    if ($tab['root'] && $mandatory_cards_count == 0) continue;
-
                 $output .= '<li class="'
                     . ($tab['current_page'] ? 'selected' : '') . ' '
                     . ($tab['root'] ? 'is-root' : '') . ' '
@@ -68,15 +66,14 @@ class dciSkin_tabs
                     )
                     )
                     . '</a>';
-
-                if ($tab['current_page']) {
+                if ($tab['current_page'] && $tab['show_anchors']) {
                     $output .= '<div class="dci-page-navbar"></div>';
                 }
 
                 $output .= static::print_tabs_node($tab['childs']);
                 $output .= '</li>';
             }
-            $output .= '</ul></div>';
+            $output .= '</ul>';
         }
         
         $html = str_replace("{DCI_COURSE_MENU}", $output, $html);
@@ -140,8 +137,8 @@ class dciSkin_tabs
 
         $sorting = \ilContainerSorting::lookupPositions($ref_id);
 
-        $mandatory_objects = \dciCourse::get_mandatory_objects($root_course["ref_id"]);
-
+        $mandatory_objects = \dciCourse::get_mandatory_objects($root_course["obj_id"]);
+        
         $mandatory_objects_status = [];
         foreach($mandatory_objects as $obj) {
             $mandatory_objects_status[$obj['obj_id']] = $obj['completed'];
