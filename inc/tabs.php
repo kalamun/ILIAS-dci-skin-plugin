@@ -49,35 +49,31 @@ class dciSkin_tabs
             $completed_cards_count = self::count_cards_by_status($tabs, "completed");
 
             foreach ($tabs as $tab) {
-                if ($mandatory_cards_count == 0 && $tab['root']) {
-                    $output .= "";
-                } else {
-                    $output .= '<li class="'
-                        . ($tab['current_page'] ? 'selected' : '') . ' '
-                        . ($tab['root'] ? 'is-root' : '') . ' '
-                        . ($tab['completed'] ? 'is-completed' : '')
-                        . '"><a href="' . $tab['permalink'] . '">'
-                        . '<span class="title">' . $tab['title'] . '</span>'
-                        . (
-                        $tab['root'] ? (
-                            $mandatory_cards_count > 0 ? '<span class="course-progress"><meter min="0" max="0" value=" ' . round(100 / $mandatory_cards_count * $completed_cards_count) . '"></meter></span>' : ''
-                        ) : (
-                            $tab['cards'] > 0
-                            ? '<span class="progress' . ($tab['completed'] ? ' completed' : '') . '">'
-                                . ($tab['completed'] ? '<span class="icon-done"></span>' : '')
-                                . $tab['cards_completed'] . ' / ' . $tab['cards']
-                                . '</span>'
-                            : ''
-                        )
-                        )
-                        . '</a>';
-                    if ($tab['current_page'] && $tab['show_anchors']) {
-                        $output .= '<div class="dci-page-navbar"></div>';
-                    }
-
-                    $output .= static::print_tabs_node($tab['childs']);
-                    $output .= '</li>';
+                $output .= '<li class="'
+                    . ($tab['current_page'] ? 'selected' : '') . ' '
+                    . ($tab['root'] ? 'is-root' : '') . ' '
+                    . ($tab['completed'] ? 'is-completed' : '')
+                    . '"><a href="' . $tab['permalink'] . '">'
+                    . '<span class="title">' . $tab['title'] . '</span>'
+                    . (
+                    $tab['root'] ? (
+                        $mandatory_cards_count > 0 ? '<span class="course-progress"><meter min="0" max="0" value=" ' . round(100 / $mandatory_cards_count * $completed_cards_count) . '"></meter></span>' : ''
+                    ) : (
+                        $tab['cards'] > 0
+                        ? '<span class="progress' . ($tab['completed'] ? ' completed' : '') . '">'
+                            . ($tab['completed'] ? '<span class="icon-done"></span>' : '')
+                            . $tab['cards_completed'] . ' / ' . $tab['cards']
+                            . '</span>'
+                        : ''
+                    )
+                    )
+                    . '</a>';
+                if ($tab['current_page'] && $tab['show_anchors']) {
+                    $output .= '<div class="dci-page-navbar"></div>';
                 }
+
+                $output .= static::print_tabs_node($tab['childs']);
+                $output .= '</li>';
             }
             $output .= '</ul>';
         }
@@ -142,8 +138,8 @@ class dciSkin_tabs
 
         $sorting = \ilContainerSorting::lookupPositions($ref_id);
 
-        $mandatory_objects = \dciCourse::get_mandatory_objects($root_course["ref_id"]);
-
+        $mandatory_objects = \dciCourse::get_mandatory_objects($root_course["obj_id"]);
+        
         $mandatory_objects_status = [];
         foreach($mandatory_objects as $obj) {
             $mandatory_objects_status[$obj['obj_id']] = $obj['completed'];
@@ -156,7 +152,7 @@ class dciSkin_tabs
                     "id" => $root_course['ref_id'],
                     "ref_id" => $root_course['ref_id'],
                     "obj_id" => $obj_id,
-                    "title" => "Progress status" /* $root_course["title"] */,
+                    "title" => $root_course["title"],
                     "permalink" => $permalink,
                     "current_page" => $tab['ref_id'] == $current_ref_id,
                     "order" => 0,
