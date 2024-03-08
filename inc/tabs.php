@@ -245,11 +245,12 @@ class dciSkin_tabs
         $user = $DIC->user();
         $ids = [];
 
-        $sql = "SELECT DISTINCT content FROM page_object WHERE parent_id = %s AND active = %s";
+        $current_language = $DIC->language()->getContentLanguage();
+        $sql = "SELECT DISTINCT content FROM page_object WHERE parent_id = %s AND active = %s AND lang = %s ORDER BY rendered_time DESC LIMIT 1";
         $res = $db->queryF(
             $sql,
-            ['integer', 'integer'],
-            [$obj_id, 1]
+            ['integer', 'integer', 'string'],
+            [$obj_id, 1, $current_language]
         );
         $page_content = $db->fetchAssoc($res)["content"];
         if (empty($page_content)) {
@@ -303,7 +304,7 @@ class dciSkin_tabs
         $user = $DIC->user();
 
         $current_language = $DIC->language()->getContentLanguage();
-        $sql = "SELECT DISTINCT content FROM page_object WHERE parent_id = %s AND active = %s AND lang = %s";
+        $sql = "SELECT DISTINCT content FROM page_object WHERE parent_id = %s AND active = %s AND lang = %s ORDER BY rendered_time DESC LIMIT 1";
         $res = $db->queryF(
             $sql,
             ['integer', 'integer', 'string'],
@@ -311,7 +312,7 @@ class dciSkin_tabs
         );
         $page_content = $db->fetchAssoc($res)["content"];
         if (empty($page_content)) {
-            $sql = "SELECT DISTINCT content FROM page_object WHERE parent_id = %s AND active = %s AND lang = %s";
+            $sql = "SELECT DISTINCT content FROM page_object WHERE parent_id = %s AND active = %s AND lang = %s ORDER BY rendered_time DESC LIMIT 1";
             $res = $db->queryF(
                 $sql,
                 ['integer', 'integer', 'string'],
