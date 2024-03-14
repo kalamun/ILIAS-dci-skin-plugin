@@ -24,7 +24,7 @@ class dciSkin_layout
             $body_class[] = "is_course";
         }
         
-        if ($_GET['cmdClass'] == "ilmailfoldergui" || $_GET['cmdClass'] == "showMail") {
+        if ($_GET['baseClass'] == "ilMailGUI" || $_GET['cmdClass'] == "ilmailfoldergui" || $_GET['cmdClass'] == "showMail") {
             $body_class[] = "is_inbox";
         }
 
