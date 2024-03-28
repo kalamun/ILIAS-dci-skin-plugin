@@ -28,10 +28,25 @@ class dciSkin_menu {
         }
       }
 
-      foreach ($centers as $center) {
-        $my_center_uri = $center['permalink'];
+      if (count($centers) === 0) {
+        $html = self::remove_element("#TRAINING_CENTER_URI#", $html);
+
+      } else if (count($centers) === 1) {
+        $my_center_uri = $centers[0]['permalink'];
         $html = str_replace("#TRAINING_CENTER_URI#", "/" . $my_center_uri, $html);
+        
+      } else {
+        $subelements = [];
+        foreach ($centers as $center) {
+          $subelements[] = [
+            "title" => $center['title'],
+            "permalink" => $center['permalink'],
+          ];
+        }
+        $html = self::add_subelements("#TRAINING_CENTER_URI#", $subelements, $html);
+
       }
+
     }
 
     if (strpos($html, "#COURSES_URI#") !== false) {
