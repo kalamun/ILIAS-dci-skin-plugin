@@ -20,13 +20,22 @@ class dciSkin_layout
             $body_class[] = "is_login";
         }
 
+        elseif ($_GET['baseClass'] == "ilMailGUI" || $_GET['cmdClass'] == "ilmailfoldergui" || $_GET['cmdClass'] == "showMail") {
+            $body_class[] = "is_inbox";
+        }
+
+        elseif ($_GET['cmdClass'] == "iltestevaluationgui" || $_GET['cmdClass'] == "ilobjtestgui") {
+            $body_class[] = "is_test";
+        }
+
+        elseif ($_GET['baseClass'] == "ilexercisehandlergui") {
+            $body_class[] = "is_excercise";
+        }
+
         if (dciSkin_tabs::getRootCourse($_GET['ref_id']) !== false) {
             $body_class[] = "is_course";
         }
         
-        if ($_GET['baseClass'] == "ilMailGUI" || $_GET['cmdClass'] == "ilmailfoldergui" || $_GET['cmdClass'] == "showMail") {
-            $body_class[] = "is_inbox";
-        }
 
         $html = str_replace("{BODY_CLASS}", implode(" ", $body_class), $html);
         $html = str_replace("{SKIN_URI}", "/Customizing/global/skin/dci", $html);
