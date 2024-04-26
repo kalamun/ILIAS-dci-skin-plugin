@@ -38,7 +38,7 @@ class dciSkin_tabs
         $output = "";
         $current_ref_id = $_GET['ref_id'];
 
-        if (count($tabs) > 0
+        if (is_countable($tabs) && count($tabs) > 0
             && ($tabs[0]['root'] || array_filter($tabs, fn($tab) => $tab['ref_id'] == $current_ref_id) || array_filter($tabs, fn($tab) => $tab['parent_id'] == $current_ref_id))
         ) {
             $output .= '<ul>';
@@ -73,11 +73,11 @@ class dciSkin_tabs
                 $output .= static::print_tabs_node($tab['childs']);
                 $output .= '</li>';
             }
+
             $output .= '</ul>';
         }
-        
-        $html = str_replace("{DCI_COURSE_MENU}", $output, $html);
-        return $html;
+
+        return $output;
     }
 
     /**
