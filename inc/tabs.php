@@ -16,7 +16,6 @@ class dciSkin_tabs
                 $output .= static::print_tabs_node($tabs);
                 $output .= '</div>';
             }
-
             $html = str_replace("{DCI_COURSE_MENU}", $output, $html);
         }
 
@@ -69,7 +68,6 @@ class dciSkin_tabs
                 if ($tab['current_page'] && $tab['show_anchors']) {
                     $output .= '<div class="dci-page-navbar"></div>';
                 }
-
                 $output .= static::print_tabs_node($tab['childs']);
                 $output .= '</li>';
             }
@@ -114,7 +112,7 @@ class dciSkin_tabs
     }
 
     public static function getChildArray($ref_id, $current_ref_id) {
-	if (empty($ref_id)) return [];
+	    if (empty($ref_id)) return [];
         global $DIC;
         $ctrl = $DIC->ctrl();
         $tree = $DIC->repositoryTree();
@@ -153,7 +151,7 @@ class dciSkin_tabs
                     "obj_id" => $obj_id,
                     "title" => $root_course["title"],
                     "permalink" => $permalink,
-                    "current_page" => $tab['ref_id'] == $current_ref_id,
+                    "current_page" => $tab['ref_id'] == $_GET['ref_id'],
                     "order" => 0,
                     "root" => true,
                     "parent_id" => 0,
@@ -206,7 +204,12 @@ class dciSkin_tabs
                 $cards_completed = array_filter($cards, fn($card) => !!$mandatory_objects_status[$card['obj_id']]);
                 $cards_mandatory = array_filter($cards, fn($card) => isset($mandatory_objects_status[$card['obj_id']]));
                 $is_completed = count($cards_completed) === count($cards);
-                $title = $obj_id != $root_course['obj_id'] ? $object->getTitle() : static::getH1($obj_id);
+                $title = $obj_id != $root_course['obj_id'] ? $object->getTitle() : static::getH1($obj_id, $root_course["title"]);
+
+                $childs = [];
+                if ($root_course['ref_id'] !== $tab['ref_id']) {
+                    $childs = static::getChildArray($tab['ref_id'], $current_ref_id);
+                }
 
                 $tabs[] = [
                     "id" => $tab['ref_id'],
@@ -214,7 +217,7 @@ class dciSkin_tabs
                     "obj_id" => $obj_id,
                     "title" => $title,
                     "permalink" => $permalink,
-                    "current_page" => $tab['ref_id'] == $current_ref_id,
+                    "current_page" => $tab['ref_id'] == $_GET['ref_id'],
                     "order" => $tab['position'],
                     "root" => false,
                     "parent_id" => $tab['parent'],
@@ -222,6 +225,8 @@ class dciSkin_tabs
                     "cards_mandatory" => count($cards_mandatory),
                     "cards_completed" => count($cards_completed),
                     "completed" => $is_completed,
+                    "show_anchors" => count($childs) == 0 && $tab['parent'] == $root_course['ref_id'],
+                    "childs" => $childs,
                 ];
             }
         }
@@ -239,13 +244,24 @@ class dciSkin_tabs
         $ids = [];
 
         $current_language = $DIC->language()->getContentLanguage();
-        $sql = "SELECT DISTINCT content FROM page_object WHERE parent_id = %s AND active = %s AND lang = %s ORDER BY rendered_time DESC LIMIT 1";
+        $sql = "SELECT content, rendered_time FROM page_object WHERE parent_id = %s AND active = %s AND lang = %s ORDER BY rendered_time DESC LIMIT 1";
         $res = $db->queryF(
             $sql,
             ['integer', 'integer', 'string'],
             [$obj_id, 1, $current_language]
         );
         $page_content = $db->fetchAssoc($res)["content"];
+
+        if (empty($page_content)) {
+            $sql = "SELECT content, rendered_time FROM page_object WHERE parent_id = %s AND active = %s ORDER BY rendered_time DESC LIMIT 1";
+            $res = $db->queryF(
+                $sql,
+                ['integer', 'integer', 'string'],
+                [$obj_id, 1, $current_language]
+            );
+            $page_content = $db->fetchAssoc($res)["content"];
+        }
+
         if (empty($page_content)) {
             return $ids;
         }
@@ -290,7 +306,7 @@ class dciSkin_tabs
         return $ids;
     }
 
-    public static function getH1($obj_id)
+    public static function getH1($obj_id, $fallback)
     {
         global $DIC;
         $db = $DIC->database();
@@ -329,6 +345,8 @@ class dciSkin_tabs
         if (!empty($first_h1)) {
             return $first_h1->textContent;
         }
+        
+        return $fallback;
     }
 
 }
