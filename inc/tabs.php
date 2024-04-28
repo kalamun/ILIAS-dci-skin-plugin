@@ -345,7 +345,7 @@ class dciSkin_tabs
         if (!empty($first_h1)) {
             return $first_h1->textContent;
         }
-        
+
         return $fallback;
     }
 
