@@ -27,7 +27,6 @@ class dciSkin_tabs
         foreach ($tabs as $page) {
             $cards_count += $page['cards_' . $status];
             if (isset($page['childs']) && count($page['childs']) > 0) {
-                echo 'childs';
                 $cards_count += self::count_cards_by_status($page['childs'], $status);
             }
         }
