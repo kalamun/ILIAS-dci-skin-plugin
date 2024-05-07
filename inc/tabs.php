@@ -51,7 +51,9 @@ class dciSkin_tabs
                     . ($tab['root'] ? 'is-root' : '') . ' '
                     . ($tab['completed'] ? 'is-completed' : '')
                     . '"><a href="' . $tab['permalink'] . '">'
-                    . '<span class="title">' . $tab['title'] . '</span>'
+                    . '<span class="title">'
+                        . $tab['title']
+                    . '</span>'
                     . (
                     $tab['root'] ? (
                         $mandatory_cards_count > 0 ? '<span class="course-progress"><meter min="0" max="0" value=" ' . round(100 / $mandatory_cards_count * $completed_cards_count) . '"></meter></span>' : ''
@@ -201,7 +203,7 @@ class dciSkin_tabs
                 $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "frameset");
 
                 $cards = static::getCardsOnPage($obj_id);
-                $cards_completed = array_filter($cards, fn($card) => !!$mandatory_objects_status[$card['obj_id']]);
+                $cards_completed = array_filter($cards, fn($card) => isset($mandatory_objects_status[$card['obj_id']]) && !empty($card['completed']));
                 $cards_mandatory = array_filter($cards, fn($card) => isset($mandatory_objects_status[$card['obj_id']]));
                 $is_completed = count($cards_completed) === count($cards);
                 $title = $obj_id != $root_course['obj_id'] ? $object->getTitle() : static::getH1($obj_id, $root_course["title"]);
@@ -244,7 +246,7 @@ class dciSkin_tabs
         $ids = [];
 
         $current_language = $DIC->language()->getContentLanguage();
-        $sql = "SELECT content, rendered_time FROM page_object WHERE parent_id = %s AND active = %s AND lang = %s ORDER BY rendered_time DESC LIMIT 1";
+        $sql = "SELECT content, rendered_time FROM page_object WHERE page_id = %s AND active = %s AND lang = %s ORDER BY rendered_time DESC LIMIT 1";
         $res = $db->queryF(
             $sql,
             ['integer', 'integer', 'string'],
@@ -253,7 +255,7 @@ class dciSkin_tabs
         $page_content = $db->fetchAssoc($res)["content"];
 
         if (empty($page_content)) {
-            $sql = "SELECT content, rendered_time FROM page_object WHERE parent_id = %s AND active = %s ORDER BY rendered_time DESC LIMIT 1";
+            $sql = "SELECT content, rendered_time FROM page_object WHERE page_id = %s AND active = %s ORDER BY rendered_time DESC LIMIT 1";
             $res = $db->queryF(
                 $sql,
                 ['integer', 'integer', 'string'],
@@ -265,7 +267,7 @@ class dciSkin_tabs
         if (empty($page_content)) {
             return $ids;
         }
-
+        
         
         $dom = new DomDocument();
         $dom->version = "1.0";
@@ -284,7 +286,7 @@ class dciSkin_tabs
             $object = \ilObjectFactory::getInstanceByRefId($id['ref_id']);
             
             // filter only allowed item types
-            if (!in_array($object->getType(), ["lm", "sahs", "file", "htlm", "tst", "exc"])) {
+            if (!in_array($object->getType(), ["lm", "sahs", "file", "htlm", "tst", "exc", "crs"])) {
                 unset($ids[$i]);
                 continue;
             }
