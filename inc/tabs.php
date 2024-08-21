@@ -184,7 +184,7 @@ class dciSkin_tabs
             }
  
             foreach ($childs as $index => $tab) {
-                if ($tab["type"] !== "fold") {
+                if (!in_array($tab["type"], ["fold", "grp"])) {
                     continue;
                 }
 
