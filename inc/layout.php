@@ -15,24 +15,24 @@ class dciSkin_layout
 
         $body_class = [];
         
-        $is_login_page = strpos($_SERVER['REQUEST_URI'], "login.php") !== false || strtolower($_GET['cmdClass']) == "ilstartupgui" || strtolower($_GET['baseClass']) == "ilstartupgui";
+        $is_login_page = strpos($_SERVER['REQUEST_URI'], "login.php") !== false || (isset($_GET['cmdClass']) && strtolower($_GET['cmdClass']) == "ilstartupgui") || (isset($_GET['baseClass']) && strtolower($_GET['baseClass']) == "ilstartupgui");
         if ($is_login_page) {
             $body_class[] = "is_login";
         }
 
-        elseif ($_GET['baseClass'] == "ilMailGUI" || $_GET['cmdClass'] == "ilmailfoldergui" || $_GET['cmdClass'] == "showMail") {
+        elseif ((isset($_GET['baseClass']) && $_GET['baseClass'] == "ilMailGUI") || (isset($_GET['cmdClass']) && $_GET['cmdClass'] == "ilmailfoldergui") || (isset($_GET['baseClass']) && (isset($_GET['cmdClass']) && $_GET['cmdClass'] == "showMail"))) {
             $body_class[] = "is_inbox";
         }
 
-        elseif ($_GET['cmdClass'] == "iltestevaluationgui" || $_GET['cmdClass'] == "ilobjtestgui") {
+        elseif ((isset($_GET['cmdClass']) && $_GET['cmdClass'] == "iltestevaluationgui") || (isset($_GET['cmdClass']) && $_GET['cmdClass'] == "ilobjtestgui")) {
             $body_class[] = "is_test";
         }
 
-        elseif ($_GET['baseClass'] == "ilexercisehandlergui") {
+        elseif (isset($_GET['baseClass']) && $_GET['baseClass'] == "ilexercisehandlergui") {
             $body_class[] = "is_excercise";
         }
 
-        if (dciSkin_tabs::getRootCourse($_GET['ref_id']) !== false) {
+        if (isset($_GET['ref_id']) && dciSkin_tabs::getRootCourse($_GET['ref_id']) !== false) {
             $body_class[] = "is_course";
         }
         
@@ -113,7 +113,9 @@ class dciSkin_layout
         } else {
             $obj_id = $DIC->ctrl()->getContextObjId();
         }
-        $style_id = ilObjStyleSheet::lookupObjectStyle($obj_id);
+        if (!empty($obj_id)) {
+            $style_id = ilObjStyleSheet::lookupObjectStyle($obj_id);
+        }
 
         if (!empty($style_id)) {
             $query = "SELECT * FROM style_parameter WHERE ";

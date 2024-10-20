@@ -11,8 +11,9 @@ class dciSkin_tabs
     {
         if (strpos($html, "{DCI_COURSE_MENU}") !== false) {
             $tabs = static::getCourseTabs();
+            $output = "";
             if(!empty($tabs)) {
-                $output = '<div class="dci-course-tabs-inner">';
+                $output .= '<div class="dci-course-tabs-inner">';
                 $output .= static::print_tabs_node($tabs);
                 $output .= '</div>';
             }
@@ -91,7 +92,8 @@ class dciSkin_tabs
         $tree = $DIC->repositoryTree();
 
         $root_course = false;
-        for ($ref_id = $current_ref_id; $ref_id; $ref_id = $tree->getParentNodeData($ref_id)['ref_id']) {
+        for ($ref_id = $current_ref_id; $ref_id; $ref_id = !empty($tree->getParentNodeData($ref_id)) ? $tree->getParentNodeData($ref_id)['ref_id'] : false) {
+            if (!$ref_id) continue;
             $node_data = $DIC["tree"]->getNodeData($ref_id);
             if (empty($node_data) || $node_data["type"] == "crs") {
                 $root_course = $node_data;
@@ -107,10 +109,16 @@ class dciSkin_tabs
     public static function getCourseTabs($ref_id = null)
     {
         $current_ref_id = $ref_id ?? $_GET['ref_id'];
-        $root_course = static::getRootCourse($current_ref_id);
-
-        $tabs = static::getChildArray($root_course['ref_id'], $current_ref_id);
-        return $tabs;
+        if (!empty($current_ref_id)) {
+            $root_course = static::getRootCourse($current_ref_id);
+            
+            if (!empty($root_course)) {
+                $tabs = static::getChildArray($root_course['ref_id'], $current_ref_id);
+                return $tabs;
+            }
+            return [];
+        }
+        return [];
     }
 
     public static function getChildArray($ref_id, $current_ref_id) {

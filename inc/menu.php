@@ -88,7 +88,8 @@ class dciSkin_menu {
     // LANGUAGE MENU
     $current_language = $DIC->language()->getContentLanguage();
     $available_languages = $DIC->language()->getInstalledLanguages();
-    $query_variables = parse_url($_SERVER['REQUEST_URI'])['query'];
+    $parsed_url = parse_url($_SERVER['REQUEST_URI']);
+    $query_variables = isset($parsed_url['query']) ? $parsed_url['query'] : "";
 
     $language_labels = [
       "en" => "English",

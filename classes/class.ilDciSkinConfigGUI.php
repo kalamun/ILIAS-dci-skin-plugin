@@ -1,9 +1,11 @@
 <?php
-
 /**
- * Config screen
+ * Class ilDciSkinConfigGUI
+ * @author            Roberto Pasini <bonjour@kalamun.net>
+ * @ilCtrl_IsCalledBy ilDciSkinConfigGUI: ilObjComponentSettingsGUI
  */
-class ilDciSkinConfigGUI extends ilPluginConfigGUI {
+
+ class ilDciSkinConfigGUI extends ilPluginConfigGUI {
 
     const PLUGIN_CLASS_NAME = ilDciSkinPlugin::class;
     const CMD_CONFIGURE = "configure";
@@ -31,7 +33,7 @@ class ilDciSkinConfigGUI extends ilPluginConfigGUI {
       $this->object = $this->dic->object();
     }
     
-    public function performCommand(/*string*/ $cmd)/*:void*/
+    public function performCommand(string $cmd):void
     {
         $this->plugin = $this->getPluginObject();
 
@@ -72,7 +74,7 @@ class ilDciSkinConfigGUI extends ilPluginConfigGUI {
 		$tpl->setContent($form->getHTML());
     }
 
-    protected function updateConfigure()/*: void*/
+    protected function updateConfigure(): void
     {
         global $lng, $DIC;
 

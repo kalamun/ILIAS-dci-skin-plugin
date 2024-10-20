@@ -55,13 +55,13 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
 	 *
 	 * @return array array with entries "mode" => modification mode, "html" => your html
 	 */
-	function getHTML($a_comp = false, $a_part = false, $a_par = array()) {
+	function getHTML(string $a_comp, string $a_part, array $a_par = []) : array {
     global $tpl;  
     global $DIC;
     
     // redirect to the home page
     $homepage_url = "/ilias.php?ref_id=1&cmd=frameset&cmdClass=ilrepositorygui&baseClass=ilrepositorygui"; // TODO: Set in config UI
-    if (strpos($homepage_url, "ilDashboardGUI") === false &&  $_GET['baseClass'] == "ilDashboardGUI" && $_GET['cmd'] == "jumpToSelectedItems") {
+    if (strpos($homepage_url, "ilDashboardGUI") === false &&  isset($_GET['baseClass']) && $_GET['baseClass'] == "ilDashboardGUI" && isset($_GET['cmd']) && $_GET['cmd'] == "jumpToSelectedItems") {
       header('Location: ' . $homepage_url);
     }
     
@@ -134,7 +134,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
 	 * @param string $a_part string that identifies the part of the UI that is handled
 	 * @param string $a_par array of parameters (depend on $a_comp and $a_part)
 	 */
-  function modifyGUI($a_comp, $a_part, $a_par = array()) {
+  function modifyGUI(string $a_comp, string $a_part, array $a_par = []) : void {
 	}
 
 }
