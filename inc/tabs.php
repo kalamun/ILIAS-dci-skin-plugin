@@ -132,7 +132,7 @@ class dciSkin_tabs
 
         $root_course = static::getRootCourse($current_ref_id);
 
-        $object = \ilObjectFactory::getInstanceByRefId($ref_id);
+        $object = \ilObjectFactory::getInstanceByRefId($ref_id, false);
         if (empty($object) || $object->lookupOfflineStatus($ref_id) == true) {
             return [];
         }
@@ -154,6 +154,9 @@ class dciSkin_tabs
 
         
         if ($ref_id == $root_course['ref_id']) {
+            $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $root_course['ref_id']);
+            $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "");
+
             $tabs = [
                 [
                     "id" => $root_course['ref_id'],
@@ -161,7 +164,7 @@ class dciSkin_tabs
                     "obj_id" => $obj_id,
                     "title" => $root_course["title"],
                     "permalink" => $permalink,
-                    "current_page" => $tab['ref_id'] == $_GET['ref_id'],
+                    "current_page" => $root_course['ref_id'] == $_GET['ref_id'],
                     "order" => 0,
                     "root" => true,
                     "parent_id" => 0,
@@ -196,7 +199,7 @@ class dciSkin_tabs
                     continue;
                 }
 
-                $object = \ilObjectFactory::getInstanceByRefId($tab['ref_id']);
+                $object = \ilObjectFactory::getInstanceByRefId($tab['ref_id'], false);
                 if (empty($object) || $object->lookupOfflineStatus($tab['ref_id']) == true) {
                     // object is offline - do not display
                     continue;
@@ -208,7 +211,7 @@ class dciSkin_tabs
 
                 $obj_id = $object->getId();
                 $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $tab['ref_id']);
-                $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "frameset");
+                $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "");
 
                 $cards = static::getCardsOnPage($obj_id);
                 $cards_completed = array_filter($cards, fn($card) => isset($mandatory_objects_status[$card['obj_id']]) && !empty($card['completed']));
@@ -291,7 +294,8 @@ class dciSkin_tabs
         }
         
         foreach ($ids as $i => $id) {
-            $object = \ilObjectFactory::getInstanceByRefId($id['ref_id']);
+            $object = \ilObjectFactory::getInstanceByRefId($id['ref_id'], false);
+            if (empty($object)) continue;
             
             // filter only allowed item types
             if (!in_array($object->getType(), ["lm", "sahs", "file", "htlm", "tst", "exc", "crs"])) {

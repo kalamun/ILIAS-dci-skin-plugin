@@ -60,8 +60,9 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
     global $DIC;
     
     // redirect to the home page
-    $homepage_url = "/ilias.php?ref_id=1&cmd=frameset&cmdClass=ilrepositorygui&baseClass=ilrepositorygui"; // TODO: Set in config UI
-    if (strpos($homepage_url, "ilDashboardGUI") === false &&  isset($_GET['baseClass']) && $_GET['baseClass'] == "ilDashboardGUI" && isset($_GET['cmd']) && $_GET['cmd'] == "jumpToSelectedItems") {
+    // $homepage_url = "/ilias.php?ref_id=1&cmd=frameset&cmdClass=ilrepositorygui&baseClass=ilrepositorygui"; // TODO: Set in config UI
+    $homepage_url = "/ilias.php?baseClass=ilrepositorygui&ref_id=1"; // TODO: Set in config UI
+    if (strpos($homepage_url, "ilDashboardGUI") === false && isset($_GET['baseClass']) && $_GET['baseClass'] == "ilDashboardGUI" && isset($_GET['cmd']) && $_GET['cmd'] == "jumpToSelectedItems") {
       header('Location: ' . $homepage_url);
     }
     

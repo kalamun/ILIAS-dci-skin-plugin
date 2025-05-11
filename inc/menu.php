@@ -23,16 +23,16 @@ class dciSkin_menu {
           $centers[ $center['ref_id'] ] = $center;
           
           $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $center['ref_id']);
-          $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "frameset");
+          $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "");
           $centers[ $center['ref_id'] ]['permalink'] = $permalink;
         }
       }
-
+      
       if (count($centers) === 0) {
         $html = self::remove_element("#TRAINING_CENTER_URI#", $html);
-
+        
       } else if (count($centers) === 1) {
-        $my_center_uri = $centers[0]['permalink'];
+        $my_center_uri = array_shift(array_values($centers))['permalink'];
         $html = str_replace("#TRAINING_CENTER_URI#", "/" . $my_center_uri, $html);
         
       } else {
@@ -58,14 +58,14 @@ class dciSkin_menu {
 
       } else if (count($user_courses) === 1) {
         $ctrl->setParameterByClass("ilrepositorygui", "ref_id", array_values($user_courses)[0]['ref_id']);
-        $my_courses_uri = $ctrl->getLinkTargetByClass("ilrepositorygui", "frameset");
+        $my_courses_uri = $ctrl->getLinkTargetByClass("ilrepositorygui", "");
         $html = str_replace("#COURSES_URI#", "/" . $my_courses_uri, $html);
         
       } else {
         $subelements = [];
         foreach ($user_courses as $user_course) {
           $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $user_course['ref_id']);
-          $my_courses_uri = $ctrl->getLinkTargetByClass("ilrepositorygui", "frameset");
+          $my_courses_uri = $ctrl->getLinkTargetByClass("ilrepositorygui", "");
 
           $subelements[] = [
             "title" => ilObject::_lookupTitle($user_course['obj_id']),

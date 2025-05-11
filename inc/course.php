@@ -23,7 +23,8 @@ class dciCourse {
 
             while ($row = $ilDB->fetchAssoc($result)) {
                 $ref_id = $row['item_id'];
-                $obj = ilObjectFactory::getInstanceByRefId($row['item_id']);
+                $obj = ilObjectFactory::getInstanceByRefId($row['item_id'], false);
+                if (empty($obj)) continue;
                 $obj_id = $obj->getId();
 
                 $obj_lp = ilObjectLP::getInstance($obj_id);
