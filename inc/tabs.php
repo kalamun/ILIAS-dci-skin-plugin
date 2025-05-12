@@ -231,14 +231,14 @@ class dciSkin_tabs
                     "title" => $title,
                     "permalink" => $permalink,
                     "current_page" => $tab['ref_id'] == $_GET['ref_id'],
-                    "order" => $tab['position'],
+                    "order" => $tab['position'] ?? 0,
                     "root" => false,
-                    "parent_id" => $tab['parent'],
+                    "parent_id" => $tab['parent'] ?? false,
                     "cards" => count($cards),
                     "cards_mandatory" => count($cards_mandatory),
                     "cards_completed" => count($cards_completed),
                     "completed" => $is_completed,
-                    "show_anchors" => count($childs) == 0 && $tab['parent'] == $root_course['ref_id'],
+                    "show_anchors" => count($childs) == 0 && ($tab['parent'] ?? false) == $root_course['ref_id'],
                     "childs" => $childs,
                 ];
             }
@@ -263,7 +263,8 @@ class dciSkin_tabs
             ['integer', 'integer', 'string'],
             [$obj_id, 1, $current_language]
         );
-        $page_content = $db->fetchAssoc($res)["content"];
+        $page_assoc = $db->fetchAssoc($res);
+        $page_content = $page_assoc ? $page_assoc["content"] : "";
 
         if (empty($page_content)) {
             $sql = "SELECT content, rendered_time FROM page_object WHERE page_id = %s AND active = %s ORDER BY rendered_time DESC LIMIT 1";
@@ -272,7 +273,8 @@ class dciSkin_tabs
                 ['integer', 'integer', 'string'],
                 [$obj_id, 1, $current_language]
             );
-            $page_content = $db->fetchAssoc($res)["content"];
+            $page_assoc = $db->fetchAssoc($res);
+            $page_content = $page_assoc ? $page_assoc["content"] : "";
         }
 
         if (empty($page_content)) {
@@ -333,7 +335,8 @@ class dciSkin_tabs
             ['integer', 'integer', 'string'],
             [$obj_id, 1, $current_language]
         );
-        $page_content = $db->fetchAssoc($res)["content"];
+        $page_assoc = $db->fetchAssoc($res);
+        $page_content = $page_assoc ? $page_assoc["content"] : "";
         if (empty($page_content)) {
             $sql = "SELECT DISTINCT content FROM page_object WHERE parent_id = %s AND active = %s AND lang = %s ORDER BY rendered_time DESC LIMIT 1";
             $res = $db->queryF(
@@ -341,7 +344,8 @@ class dciSkin_tabs
                 ['integer', 'integer', 'string'],
                 [$obj_id, 1, "-"]
             );
-            $page_content = $db->fetchAssoc($res)["content"];
+            $page_assoc = $db->fetchAssoc($res);
+            $page_content = $page_assoc ? $page_assoc["content"] : "";
             if (empty($page_content)) {
                 return "";
             }
