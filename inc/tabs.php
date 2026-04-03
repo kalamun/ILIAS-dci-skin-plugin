@@ -132,7 +132,7 @@ class dciSkin_tabs
 
         $root_course = static::getRootCourse($current_ref_id);
 
-        $object = \ilObjectFactory::getInstanceByRefId($ref_id);
+        $object = \ilObjectFactory::getInstanceByRefId($ref_id, false);
         if (empty($object) || $object->lookupOfflineStatus($ref_id) == true) {
             return [];
         }
@@ -195,7 +195,7 @@ class dciSkin_tabs
                     continue;
                 }
 
-                $object = \ilObjectFactory::getInstanceByRefId($tab['ref_id']);
+                $object = \ilObjectFactory::getInstanceByRefId($tab['ref_id'], false);
                 if (empty($object) || $object->lookupOfflineStatus($tab['ref_id']) == true) {
                     // object is offline - do not display
                     continue;
@@ -295,7 +295,7 @@ class dciSkin_tabs
         }
 
         foreach ($ids as $i => $id) {
-            $object = \ilObjectFactory::getInstanceByRefId($id['ref_id']);
+            $object = \ilObjectFactory::getInstanceByRefId($id['ref_id'], false);
 
             // filter only allowed item types
             if (! in_array($object->getType(), ["lm", "sahs", "file", "htlm", "tst", "exc", "crs"])) {
