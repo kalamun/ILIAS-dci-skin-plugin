@@ -5,3 +5,7 @@ progress_status#:#Progress status
 login_image#:#Background image for login page
 settings#:#Settings
 configuration_saved#:#The modifications have been saved
+cache#:#Cache
+enable_cache#:#Enable cache
+purge_cache#:#Purge cache
+cache_purged#:#The cache has been purged

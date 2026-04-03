@@ -6,6 +6,7 @@ require_once(__DIR__ . "/../inc/footer.php");
 require_once(__DIR__ . "/../inc/layout.php");
 require_once(__DIR__ . "/../inc/tabs.php");
 require_once(__DIR__ . "/../inc/menu.php");
+require_once(__DIR__ . "/../inc/cache.php");
 
 /**
  * Class ilDciSkinUIHookGUI
@@ -24,6 +25,8 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI {
 
   public function __construct()
   {
+    dciSkin_cache::on_loading_page();
+
     global $DIC;
     $this->user = $DIC->user();
     $this->ctrl = $DIC->ctrl();

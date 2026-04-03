@@ -1,7 +1,7 @@
 <?php
 
 $id = "xdciskin";
-$version = "0.0.1";
+$version = "0.1.5";
 $ilias_min_version = "7.0.0";
 $ilias_max_version = "7.999";
 $responsible = "Kalamun";

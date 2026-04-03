@@ -17,18 +17,7 @@
     public function __construct()
     {
         parent::__construct();
- 
-        global $DIC;
-        //var_dump($this->provider_collection); die();
-        /*
-        $this->provider_collection->setMainBarProvider(new MainBarProvider($DIC, $this));
-        $this->provider_collection->setMetaBarProvider(new MetaBarProvider($DIC, $this));
-        $this->provider_collection->setNotificationProvider(new NotificationProvider($DIC, $this));
-        $this->provider_collection->setModificationProvider(new ModificationProvider($DIC, $this));
-        $this->provider_collection->setToolProvider(new ToolProvider($DIC, $this));
- */    }
-
-    // https://docu.ilias.de/ilias.php?ref_id=42&obj_id=27236&cmd=layout&cmdClass=illmpresentationgui&cmdNode=13g&baseClass=ilLMPresentationGUI
+    }
 
     public static function getInstance() : ilDciSkinPlugin
     {

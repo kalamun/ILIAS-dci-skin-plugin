@@ -5,3 +5,7 @@ progress_status#:#Avanzamento del corso
 login_image#:#Sfondo della pagina di login
 settings#:#Impostazioni
 configuration_saved#:#Nuove impostazioni salvate con successo
+cache#:#Cache
+enable_cache#:#Attivare la cache
+purge_cache#:#Svuota la cache
+cache_purged#:#La cache è stata svuotata
