@@ -296,6 +296,9 @@ class dciSkin_tabs
 
         foreach ($ids as $i => $id) {
             $object = \ilObjectFactory::getInstanceByRefId($id['ref_id'], false);
+            if (empty($object)) {
+                continue;
+            }
 
             // filter only allowed item types
             if (! in_array($object->getType(), ["lm", "sahs", "file", "htlm", "tst", "exc", "crs"])) {
