@@ -113,7 +113,15 @@ class dciSkin_tabs
         $current_ref_id = $ref_id ?? $_GET['ref_id'];
         $root_course    = static::getRootCourse($current_ref_id);
 
+        $from_cache = dciSkin_cache::get('dciSkin_tabs::getCourseTabs', $root_course['ref_id']);
+        if (dciSkin_cache::is_valid($from_cache)) {
+            return $from_cache;
+        }
+
         $tabs = static::getChildArray($root_course['ref_id'], $current_ref_id);
+
+        dciSkin_cache::add('dciSkin_tabs::getCourseTabs', $tabs, $ref_id);
+
         return $tabs;
     }
 
