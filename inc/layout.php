@@ -1,12 +1,12 @@
 <?php
-/**
+    /**
  * Generic layout functions
  */
 
-require_once __DIR__ . "/tabs.php";
+    require_once __DIR__ . "/tabs.php";
 
-class dciSkin_layout
-{
+    class dciSkin_layout
+    {
 
     public static function apply_custom_placeholders($html)
     {
@@ -14,28 +14,21 @@ class dciSkin_layout
         $user = $DIC->user();
 
         $body_class = [];
-        
+
         $is_login_page = strpos($_SERVER['REQUEST_URI'], "login.php") !== false || strtolower($_GET['cmdClass']) == "ilstartupgui" || strtolower($_GET['baseClass']) == "ilstartupgui";
         if ($is_login_page) {
             $body_class[] = "is_login";
-        }
-
-        elseif ($_GET['baseClass'] == "ilMailGUI" || $_GET['cmdClass'] == "ilmailfoldergui" || $_GET['cmdClass'] == "showMail") {
+        } elseif ($_GET['baseClass'] == "ilMailGUI" || $_GET['cmdClass'] == "ilmailfoldergui" || $_GET['cmdClass'] == "showMail") {
             $body_class[] = "is_inbox";
-        }
-
-        elseif ($_GET['cmdClass'] == "iltestevaluationgui" || $_GET['cmdClass'] == "ilobjtestgui") {
+        } elseif ($_GET['cmdClass'] == "iltestevaluationgui" || $_GET['cmdClass'] == "ilobjtestgui") {
             $body_class[] = "is_test";
-        }
-
-        elseif ($_GET['baseClass'] == "ilexercisehandlergui") {
+        } elseif ($_GET['baseClass'] == "ilexercisehandlergui") {
             $body_class[] = "is_excercise";
         }
 
         if (dciSkin_tabs::getRootCourse($_GET['ref_id']) !== false) {
             $body_class[] = "is_course";
         }
-        
 
         $html = str_replace("{BODY_CLASS}", implode(" ", $body_class), $html);
         $html = str_replace("{SKIN_URI}", "/Customizing/global/skin/dci", $html);
@@ -46,13 +39,13 @@ class dciSkin_layout
         // short codes
         $name = $user->getFirstName();
         $html = str_replace("[USER_NAME]", $name, $html);
-        
+
         return $html;
     }
 
     public static function remove_default_cards($html)
     {
-        $dom = new DomDocument();
+        $dom            = new DomDocument();
         $internalErrors = libxml_use_internal_errors(true);
         $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
         libxml_use_internal_errors($internalErrors);
@@ -60,7 +53,7 @@ class dciSkin_layout
 
         // remove card container
         $card_container = $finder->query('//div[contains(@class, "ilContainerBlock")]');
-        if (!empty($card_container[0])) {
+        if (! empty($card_container[0])) {
             $card_container[0]->parentNode->removeChild($card_container[0]);
         }
 
@@ -70,7 +63,7 @@ class dciSkin_layout
     public static function add_login_thumbnail($html)
     {
         /* not possible to use xpath here without breaking ILIAS */
-        $placeholder = '{LOGIN_THUMBNAIL}';
+        $placeholder        = '{LOGIN_THUMBNAIL}';
         $placeholder_status = '{LOGIN_THUMBNAIL_STATUS}';
         if (strpos($html, $placeholder) !== false || strpos($html, $placeholder_status) !== false) {
             $file_path = './minarm_login.jpg';
@@ -82,13 +75,13 @@ class dciSkin_layout
                 $html = str_replace($placeholder_status, 'hidden', $html);
             }
         }
-    
+
         return $html;
     }
 
     public static function cleanup_dead_code($html)
     {
-        $dom = new DomDocument();
+        $dom            = new DomDocument();
         $internalErrors = libxml_use_internal_errors(true);
         $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
         libxml_use_internal_errors($internalErrors);
@@ -96,56 +89,61 @@ class dciSkin_layout
 
         // remove card container
         $card_container = $finder->query('//a[contains(@id, "ilPageShowAdvContent")]');
-        if (!empty($card_container[0])) {
+        if (! empty($card_container[0])) {
             $card_container[0]->parentNode->removeChild($card_container[0]);
         }
 
         return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
     }
 
-    public static function apply_custom_style($html) {
+    public static function apply_custom_style($html)
+    {
         global $DIC;
         $style_tag = "";
 
-        if (!empty($_GET['ref_id'])) {
+        if (! empty($_GET['ref_id'])) {
             $root_id = dciSkin_tabs::getRootCourse($_GET['ref_id']);
-            $obj_id = $root_id['obj_id'];
+            $obj_id  = $root_id['obj_id'];
         } else {
             $obj_id = $DIC->ctrl()->getContextObjId();
         }
         $style_id = ilObjStyleSheet::lookupObjectStyle($obj_id);
 
-        if (!empty($style_id)) {
-            $query = "SELECT * FROM style_parameter WHERE ";
+        if (! empty($style_id)) {
+            $query  = "SELECT * FROM style_parameter WHERE ";
             $result = $DIC->database()->queryF("SELECT class, parameter, value FROM style_parameter WHERE style_id = %s AND (class='Accent' OR class='PageContainer' OR class='VAccordIHead')", ['integer'], [$style_id]);
-            foreach($DIC->database()->fetchAll($result) as $line) {
-                if (substr($line['value'], 0, 1) !== "!") $style[$line['class']][$line['parameter']] = $line['value'];
+            foreach ($DIC->database()->fetchAll($result) as $line) {
+                if (substr($line['value'], 0, 1) !== "!") {
+                    $style[$line['class']][$line['parameter']] = $line['value'];
+                }
+
             }
-            
+
             ob_start();
             ?>
             <style>
                 :root {
                     <?php
-                    foreach($style as $class => $parameters) {
-                        foreach($parameters as $parameter => $value) {
-                            ?>--il-<?= $class; ?>-<?= $parameter; ?>: <?= $value; ?>;
+                        foreach ($style as $class => $parameters) {
+                                    foreach ($parameters as $parameter => $value) {
+                                        ?>--il-<?php echo $class; ?>-<?php echo $parameter; ?>: <?php echo $value; ?>;
                             <?php
-                        }
-                    }
-                    ?>
+                                }
+                                            }
+                                        ?>
                 }
             </style>
             <?php
-            $style_tag = ob_get_clean();
-        }
+                $style_tag = ob_get_clean();
+                        }
 
-        $html .= $style_tag;
-        return $html;
-    }
+                        $html .= $style_tag;
+                        return $html;
+                    }
 
-    public static function apply_cover($html) {
-/*         const rowWrapper = ilContentContainer.querySelector('body.is_course .row');
+                    public static function apply_cover($html)
+                    {
+                        /*         const rowWrapper = ilContentContainer.querySelector('body.is_course .row');
         if (rowWrapper) {
             const cover = ilContentContainer.querySelector('#il_center_col .dci-cover:first-of-type');
             if (cover) {
@@ -156,27 +154,27 @@ class dciSkin_layout
             }
  */
 
-        $dom = new DomDocument();
-        $internalErrors = libxml_use_internal_errors(true);
-        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
-        libxml_use_internal_errors($internalErrors);
-        $finder = new DomXPath($dom);
+                        $dom            = new DomDocument();
+                        $internalErrors = libxml_use_internal_errors(true);
+                        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
+                        libxml_use_internal_errors($internalErrors);
+                        $finder = new DomXPath($dom);
 
-        // remove card container
-        $cover = $finder->query('//div[contains(@id, "il_center_col")]//div[contains(@class, "dci-cover")]');
-        $cover_wrapper = $finder->query('//div[contains(@class, "dci-course-cover")]');
-        //var_dump($cover[0], $cover_wrapper[0]); die();
-        if (!empty($cover_wrapper[0]) && !empty($cover[0])) {
-            $cover_wrapper[0]->appendChild($cover[0]);
-            //$cover[0]->parentNode->removeChild($cover[0]);
-        }
+                        // remove card container
+                        $cover         = $finder->query('//div[contains(@id, "il_center_col")]//div[contains(@class, "dci-cover")]');
+                        $cover_wrapper = $finder->query('//div[contains(@class, "dci-course-cover")]');
+                        //var_dump($cover[0], $cover_wrapper[0]); die();
+                        if (! empty($cover_wrapper[0]) && ! empty($cover[0])) {
+                            $cover_wrapper[0]->appendChild($cover[0]);
+                            //$cover[0]->parentNode->removeChild($cover[0]);
+                        }
 
-        return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
-    }
+                        return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+                    }
 
-    public static function getCoverFromRootPage($obj_id)
-    {
-/*         global $DIC;
+                    public static function getCoverFromRootPage($obj_id)
+                    {
+                        /*         global $DIC;
         $db = $DIC->database();
         $user = $DIC->user();
         $current_ref_id = $_GET['ref_id'];
@@ -230,6 +228,6 @@ class dciSkin_layout
         }
 
         return $ids; */
-    }
+                    }
 
-}
+            }

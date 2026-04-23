@@ -62,6 +62,26 @@ class dciSkin_cache
         }
     }
 
+    /* main function to trigger caching on once everything has already been processed */
+    public static function after_loading_page()
+    {
+/*         var_dump($_GET);
+        var_dump($_POST);
+        die();
+ */
+        /* before adding a user to a course */
+        if (strtolower($_GET['cmdClass']) == 'ilrepositorysearchgui'
+            && $_GET['cmd'] == 'post'
+            && $_GET['baseClass'] == 'ilrepositorygui'
+            && ! empty($_POST['user_login'])
+            && ! empty($_POST['user_type'])
+        ) {
+
+        }
+        // http://192.168.1.100/ilias.php?ref_id=95&cmdClass=ilrepositorysearchgui&cmd=post&cmdNode=wk:lq:8p:wp&baseClass=ilrepositorygui&rtoken=193689a5cd3e7fb5cbc215d9210b1ed0
+        // POST user_login=DCI-TEST1&user_type=310&cmd%5BaddUserFromAutoComplete%5D=Add
+    }
+
     public static function add($type, $value, $object_id = 0, $user_id = false): bool
     {
         self::construct();
