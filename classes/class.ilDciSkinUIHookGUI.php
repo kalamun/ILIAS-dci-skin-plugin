@@ -23,56 +23,96 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
     protected $user;
     protected $ctrl;
 
-    protected $is_dci_skin;
-    protected $is_admin;
-    protected $is_tutor;
+    protected $is_dci_skin = false;
+    protected $is_admin = false;
+    protected $is_tutor = false;
+    protected $is_initialized = false;
 
     public function __construct()
     {
-        dciSkin_cache::on_loading_page();
+        if ($this->is_initialized == true) {
+            return;
+        }
+
+        // === Protection 1 : appel cache wrapped ===
+        try {
+            dciSkin_cache::on_loading_page();
+        } catch (\Throwable $e) {
+            error_log('[DciSkin] cache::on_loading_page() failed: ' . $e->getMessage());
+        }
 
         /* Prevent any modification to users not using the DCI Skin */
-        $this->is_dci_skin = ilStyleDefinition::getCurrentSkin() === 'dci';
+        try {
+            $this->is_dci_skin = ilStyleDefinition::getCurrentSkin() === 'dci';
+        } catch (\Throwable $e) {
+            $this->is_dci_skin = false;
+        }
+
         if (! $this->is_dci_skin) {
             return;
         }
 
+        // === Protection 2 : vérifier l'état du DIC avant tout accès ===
         global $DIC;
-        $this->user = $DIC->user();
-        $this->ctrl = $DIC->ctrl();
+        if (! isset($DIC) || ! ($DIC instanceof \ILIAS\DI\Container)) {
+            return;
+        }
 
-        $this->is_admin = false;
-        $this->is_tutor = false;
+        if (! isset($DIC['ilUser'])) {
+            return;
+        }
 
-        $global_roles_of_user = $DIC->rbac()->review()->assignedRoles($DIC->user()->getId());
+        if (! isset($DIC['ilCtrl'])) {
+            return;
+        }
 
-        foreach ($DIC->rbac()->review()->getGlobalRoles() as $role) {
-            if (in_array($role, $global_roles_of_user)) {
-                $role = new ilObjRole($role);
-                if ($role->getTitle() == "Administrator") {
-                    $this->is_admin = true;
-                }
+        try {
+            $this->user = $DIC->user();
+            $this->ctrl = $DIC->ctrl();
 
-                if ($role->getTitle() == "Tutor") {
-                    $this->is_tutor = true;
-                }
-
+            $user_id = (int) $this->user->getId();
+            if ($user_id <= 0 || $user_id === ANONYMOUS_USER_ID) {
+                // Anonymous users: we keep dci skin enabled for the public functions
+                $this->is_initialized = true;
+                return;
             }
+
+            // === Protection 3 : RBAC en try/catch ===
+            if (! isset($DIC['rbacreview'])) {
+                $this->is_initialized = true;
+                return;
+            }
+
+            $rbac_review = $DIC->rbac()->review();
+            $global_roles_of_user = $rbac_review->assignedRoles($user_id);
+            $global_roles = $rbac_review->getGlobalRoles();
+
+            foreach ($global_roles as $role) {
+                if (in_array($role, $global_roles_of_user)) {
+                    try {
+                        $role_obj = new ilObjRole($role);
+                        $title = $role_obj->getTitle();
+                        if ($title === "Administrator") {
+                            $this->is_admin = true;
+                        } elseif ($title === "Tutor") {
+                            $this->is_tutor = true;
+                        }
+                    } catch (\Throwable $e) {
+                        continue;
+                    }
+                }
+            }
+
+            $this->is_initialized = true;
+
+        } catch (\Throwable $e) {
+            error_log('[DciSkin] __construct error: ' . $e->getMessage());
+            $this->is_initialized = false;
         }
     }
 
     /**
-     * Modify HTML output of GUI elements. Modifications modes are:
-     * - ilUIHookPluginGUI::KEEP (No modification)
-     * - ilUIHookPluginGUI::REPLACE (Replace default HTML with your HTML)
-     * - ilUIHookPluginGUI::APPEND (Append your HTML to the default HTML)
-     * - ilUIHookPluginGUI::PREPEND (Prepend your HTML to the default HTML)
-     *
-     * @param string $a_comp component
-     * @param string $a_part string that identifies the part of the UI that is handled
-     * @param string $a_par array of parameters (depend on $a_comp and $a_part)
-     *
-     * @return array array with entries "mode" => modification mode, "html" => your html
+     * Modify HTML output of GUI elements.
      */
     public function getHTML($a_comp = false, $a_part = false, $a_par = [])
     {
@@ -80,78 +120,99 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
             return ["mode" => ilUIHookPluginGUI::KEEP, "html" => ""];
         }
 
-        global $tpl;
-        global $DIC;
-
-                                                                                                               // template_show
-        $homepage_url = "/ilias.php?ref_id=1&cmd=frameset&cmdClass=ilrepositorygui&baseClass=ilrepositorygui"; // TODO: Set in config UI
-        if (strpos($homepage_url, "ilDashboardGUI") === false && $_GET['baseClass'] == "ilDashboardGUI" && $_GET['cmd'] == "jumpToSelectedItems") {
-            header('Location: ' . $homepage_url);
+        // Degradate if init failed
+        if (! $this->is_initialized || $this->ctrl === null) {
+            return ["mode" => ilUIHookPluginGUI::KEEP, "html" => ""];
         }
 
-        if (! $this->is_admin && ! $this->is_tutor && ! empty($a_par["html"]) && ! $this->ctrl->isAsynch()) {
-            $html = $a_par["html"];
+        try {
+            global $tpl;
+            global $DIC;
 
-            if ($a_part == "template_show") {
-                // custom placeholders
-                $html = dciSkin_layout::apply_custom_placeholders($html);
-                $html = dciSkin_layout::apply_custom_style($html);
-                $html = dciSkin_layout::apply_cover($html);
+            $homepage_url = "/ilias.php?ref_id=1&cmd=frameset&cmdClass=ilrepositorygui&baseClass=ilrepositorygui";
+
+            $base_class = isset($_GET['baseClass']) ? (string) $_GET['baseClass'] : '';
+            $cmd = isset($_GET['cmd']) ? (string) $_GET['cmd'] : '';
+
+            if (strpos($homepage_url, "ilDashboardGUI") === false
+                && $base_class === "ilDashboardGUI"
+                && $cmd === "jumpToSelectedItems") {
+                header('Location: ' . $homepage_url);
+                exit;
             }
 
-            /* login */
-            if ($a_part == "template_add" && strpos($a_par["tpl_id"], "tpl.login.html") !== false) {
-                $html = dciSkin_layout::add_login_thumbnail($html);
+            if (! $this->is_admin && ! $this->is_tutor && ! empty($a_par["html"]) && ! $this->ctrl->isAsynch()) {
+                $html = $a_par["html"];
+
+                if ($a_part == "template_show") {
+                    $html = dciSkin_layout::apply_custom_placeholders($html);
+                    $html = dciSkin_layout::apply_custom_style($html);
+                    $html = dciSkin_layout::apply_cover($html);
+                }
+
+                /* login */
+                if ($a_part == "template_add" && isset($a_par["tpl_id"])
+                    && strpos($a_par["tpl_id"], "tpl.login.html") !== false) {
+                    $html = dciSkin_layout::add_login_thumbnail($html);
+                }
+
+                /* menu */
+                if ($a_part == "template_get" && isset($a_par["tpl_id"])
+                    && $a_par["tpl_id"] == "src/UI/templates/default/MainControls/tpl.mainbar.html") {
+                    $html = dciSkin_menu::apply_mainbar($html);
+                }
+                if ($a_part == "template_get" && isset($a_par["tpl_id"])
+                    && $a_par["tpl_id"] == "src/UI/templates/default/MainControls/tpl.metabar.html") {
+                    $html = dciSkin_menu::apply_metabar($html);
+                }
+
+                /* accordion */
+                if ($a_part == "template_get" && isset($a_par["tpl_id"])
+                    && $a_par["tpl_id"] == "Services/COPage/tpl.page.html"
+                    && strpos($html, "ilc_va_icntr_VAccordICntr") !== false) {
+                    $html = dciSkin_accordion::apply($html);
+                }
+
+                /* remove cards default section */
+                if ($a_part == "template_get" && isset($a_par["tpl_id"])
+                    && $a_par["tpl_id"] == "Services/Container/tpl.container_page.html"
+                    && strpos($html, "ilContainerBlock") !== false) {
+                    $html = dciSkin_layout::remove_default_cards($html);
+                    $html = dciSkin_layout::cleanup_dead_code($html);
+                }
+
+                /* footer */
+                if ($a_part == "template_get" && isset($a_par['tpl_id'])
+                    && $a_par['tpl_id'] == "src/UI/templates/default/MainControls/tpl.footer.html") {
+                    $html = dciSkin_footer::apply($html);
+                }
+
+                if ($a_part == "template_load") {
+                    $html = dciSkin_layout::apply_custom_placeholders($html);
+                    $html = dciSkin_tabs::apply_custom_placeholders($html);
+                }
+
+                return ["mode" => ilUIHookPluginGUI::REPLACE, "html" => $html];
             }
 
-            /* menu */
-            if ($a_part == "template_get" && $a_par["tpl_id"] == "src/UI/templates/default/MainControls/tpl.mainbar.html") {
-                $html = dciSkin_menu::apply_mainbar($html);
-            }
-            if ($a_part == "template_get" && $a_par["tpl_id"] == "src/UI/templates/default/MainControls/tpl.metabar.html") {
-                $html = dciSkin_menu::apply_metabar($html);
-            }
+            return ["mode" => ilUIHookPluginGUI::KEEP, "html" => ""];
 
-            /* accordion */
-            if ($a_part == "template_get" && $a_par["tpl_id"] == "Services/COPage/tpl.page.html" && strpos($html, "ilc_va_icntr_VAccordICntr") !== false) {
-                $html = dciSkin_accordion::apply($html);
-            }
-
-            /* remove cards default section */
-            if ($a_part == "template_get" && $a_par["tpl_id"] == "Services/Container/tpl.container_page.html" && strpos($html, "ilContainerBlock") !== false) {
-                $html = dciSkin_layout::remove_default_cards($html);
-                $html = dciSkin_layout::cleanup_dead_code($html);
-            }
-
-            /* footer */
-            if ($a_part == "template_get" && $a_par['tpl_id'] == "src/UI/templates/default/MainControls/tpl.footer.html") {
-                $html = dciSkin_footer::apply($html);
-            }
-
-            if ($a_part == "template_load") {
-                // custom placeholders
-                $html = dciSkin_layout::apply_custom_placeholders($html);
-
-                /* add tabs */
-                $html = dciSkin_tabs::apply_custom_placeholders($html);
-            }
-
-            return ["mode" => ilUIHookPluginGUI::REPLACE, "html" => $html];
+        } catch (\Throwable $e) {
+            // Filet de sécurité final : on retourne KEEP pour ne pas casser la page
+            error_log('[DciSkin] getHTML error in ' . $a_part . ': ' . $e->getMessage());
+            return ["mode" => ilUIHookPluginGUI::KEEP, "html" => ""];
         }
-
-        return ["mode" => ilUIHookPluginGUI::KEEP, "html" => ""];
     }
 
     /**
-     * Modify GUI objects, before they generate ouput
-     *
-     * @param string $a_comp component
-     * @param string $a_part string that identifies the part of the UI that is handled
-     * @param string $a_par array of parameters (depend on $a_comp and $a_part)
+     * Modify GUI objects, before they generate output
      */
     public function modifyGUI($a_comp, $a_part, $a_par = [])
     {
-        dciSkin_cache::after_loading_page();
+        try {
+            dciSkin_cache::after_loading_page();
+        } catch (\Throwable $e) {
+            error_log('[DciSkin] cache::after_loading_page() failed: ' . $e->getMessage());
+        }
     }
-
 }
