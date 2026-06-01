@@ -91,7 +91,7 @@
         // LANGUAGE MENU
         $current_language    = $DIC->language()->getContentLanguage();
         $available_languages = $DIC->language()->getInstalledLanguages();
-        $query_variables     = parse_url($_SERVER['REQUEST_URI'])['query'];
+        $query_variables     = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY) ?: '';
 
         $language_labels = [
             "en" => "English",

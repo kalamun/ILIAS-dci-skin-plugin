@@ -15,18 +15,21 @@
 
         $body_class = [];
 
-        $is_login_page = strpos($_SERVER['REQUEST_URI'], "login.php") !== false || strtolower($_GET['cmdClass']) == "ilstartupgui" || strtolower($_GET['baseClass']) == "ilstartupgui";
+        $is_login_page = strpos($_SERVER['REQUEST_URI'], "login.php") !== false
+            || (isset($_GET['cmdClass']) && strtolower($_GET['cmdClass']) == "ilstartupgui")
+            || (isset($_GET['baseClass']) && strtolower($_GET['baseClass']) == "ilstartupgui");
         if ($is_login_page) {
             $body_class[] = "is_login";
-        } elseif ($_GET['baseClass'] == "ilMailGUI" || $_GET['cmdClass'] == "ilmailfoldergui" || $_GET['cmdClass'] == "showMail") {
+        } elseif ((isset($_GET['baseClass']) && $_GET['baseClass'] == "ilMailGUI")
+            || (isset($_GET['cmdClass']) && ($_GET['cmdClass'] == "ilmailfoldergui" || $_GET['cmdClass'] == "showMail"))) {
             $body_class[] = "is_inbox";
-        } elseif ($_GET['cmdClass'] == "iltestevaluationgui" || $_GET['cmdClass'] == "ilobjtestgui") {
+        } elseif (isset($_GET['cmdClass']) && ($_GET['cmdClass'] == "iltestevaluationgui" || $_GET['cmdClass'] == "ilobjtestgui")) {
             $body_class[] = "is_test";
-        } elseif ($_GET['baseClass'] == "ilexercisehandlergui") {
+        } elseif (isset($_GET['baseClass']) && $_GET['baseClass'] == "ilexercisehandlergui") {
             $body_class[] = "is_excercise";
         }
 
-        if (dciSkin_tabs::getRootCourse($_GET['ref_id']) !== false) {
+        if (isset($_GET['ref_id']) && dciSkin_tabs::getRootCourse($_GET['ref_id']) !== false) {
             $body_class[] = "is_course";
         }
 
@@ -66,12 +69,13 @@
         $placeholder        = '{LOGIN_THUMBNAIL}';
         $placeholder_status = '{LOGIN_THUMBNAIL_STATUS}';
         if (strpos($html, $placeholder) !== false || strpos($html, $placeholder_status) !== false) {
-            $file_path = './minarm_login.jpg';
+            $file_path = dirname(__DIR__) . '/minarm_login.jpg';
+            $file_url  = '/Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/DciSkin/minarm_login.jpg';
             if (file_exists($file_path)) {
-                $html = str_replace($placeholder, '<img class="login-thumbnail" src="' . $file_path . '" />', $html);
+                $html = str_replace($placeholder, '<img class="login-thumbnail" src="' . $file_url . '" />', $html);
                 $html = str_replace($placeholder_status, 'visible', $html);
             } else {
-                $html = str_replace($placeholder, '<img class="login-thumbnail" src="' . $file_path . '" />', $html);
+                $html = str_replace($placeholder, '<img class="login-thumbnail" src="' . $file_url . '" />', $html);
                 $html = str_replace($placeholder_status, 'hidden', $html);
             }
         }

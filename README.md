@@ -15,8 +15,8 @@ git clone https://github.com/kalamun/ILIAS-dci-skin-plugin.git DciSkin
 Update and activate the plugin in the ILIAS Plugin Administration
 
 ### Requirements
-* ILIAS >= 7.0
-* PHP >= 7.0
+* ILIAS >= 10.0
+* PHP >= 7.4
 
 ### Support
 * Bug reports and feature requests: open a ticket in https://github.com/kalamun/ilias-jitsi/issues

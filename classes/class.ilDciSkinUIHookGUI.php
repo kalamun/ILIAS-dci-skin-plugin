@@ -1,7 +1,4 @@
 <?php
-include_once "./Services/Object/classes/class.ilObjectGUI.php";
-include_once "Services/Style/System/classes/class.ilStyleDefinition.php";
-
 require_once __DIR__ . "/../inc/accordion.php";
 require_once __DIR__ . "/../inc/course.php";
 require_once __DIR__ . "/../inc/footer.php";
@@ -114,7 +111,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
     /**
      * Modify HTML output of GUI elements.
      */
-    public function getHTML($a_comp = false, $a_part = false, $a_par = [])
+    public function getHTML(string $a_comp, string $a_part, array $a_par = []) : array
     {
         if (! $this->is_dci_skin) {
             return ["mode" => ilUIHookPluginGUI::KEEP, "html" => ""];
@@ -207,7 +204,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
     /**
      * Modify GUI objects, before they generate output
      */
-    public function modifyGUI($a_comp, $a_part, $a_par = [])
+    public function modifyGUI(string $a_comp, string $a_part, array $a_par = []) : void
     {
         try {
             dciSkin_cache::after_loading_page();

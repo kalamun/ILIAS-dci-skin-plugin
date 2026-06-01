@@ -5,35 +5,45 @@
  */
 class ilDciSkinConfigGUI extends ilPluginConfigGUI
 {
-
     const PLUGIN_CLASS_NAME    = ilDciSkinPlugin::class;
     const CMD_CONFIGURE        = "configure";
     const CMD_UPDATE_CONFIGURE = "updateConfigure";
     const CMD_PURGE_CACHE      = "purgeCache";
     const LANG_MODULE          = "config";
+    const LOGIN_IMAGE_NAME     = 'minarm_login.jpg';
 
+    /** @var \ILIAS\DI\Container */
     protected $dic;
+    /** @var ilDciSkinPlugin */
     protected $plugin;
+    /** @var ilLanguage */
     protected $lng;
+    /** @var \Psr\Http\Message\ServerRequestInterface */
     protected $request;
+    /** @var ilObjUser */
     protected $user;
+    /** @var ilCtrl */
     protected $ctrl;
+    /** @var ilObject */
     protected $object;
+    protected $plugin_path;
+    protected $plugin_url;
 
     public function __construct()
     {
         global $DIC;
-        $this->dic    = $DIC;
-        $this->plugin = ilDciSkinPlugin::getInstance();
-        $this->lng    = $this->dic->language();
-        // $this->lng->loadLanguageModule("assessment");
-        $this->request = $this->dic->http()->request();
-        $this->user    = $this->dic->user();
-        $this->ctrl    = $this->dic->ctrl();
-        $this->object  = $this->dic->object();
+        $this->dic         = $DIC;
+        $this->plugin      = ilDciSkinPlugin::getInstance();
+        $this->lng         = $this->dic->language();
+        $this->request     = $this->dic->http()->request();
+        $this->user        = $this->dic->user();
+        $this->ctrl        = $this->dic->ctrl();
+        $this->object      = $this->dic->object();
+        $this->plugin_path = dirname(__DIR__);
+        $this->plugin_url  = '/Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/DciSkin';
     }
 
-    public function performCommand( /*string*/$cmd) /*:void*/
+    public function performCommand(string $cmd): void
     {
         $this->plugin = $this->getPluginObject();
 
@@ -43,69 +53,64 @@ class ilDciSkinConfigGUI extends ilPluginConfigGUI
             case self::CMD_PURGE_CACHE:
                 $this->{$cmd}();
                 break;
-
             default:
                 break;
         }
     }
 
-    protected function configure() /*: void*/
+    protected function configure()
     {
-        global $tpl, $ilCtrl, $lng, $DIC;
+        global $tpl, $DIC;
 
-        $cache_enabled = $DIC['ilias']->getSetting("dci_cache_enabled");
+        $cache_enabled = filter_var($this->plugin->getVariable('dci_cache_enabled', false), FILTER_VALIDATE_BOOLEAN);
 
         require_once "./Services/Form/classes/class.ilPropertyFormGUI.php";
         $form = new ilPropertyFormGUI();
-        $form->setFormAction($ilCtrl->getFormAction($this));
-        $form->setTitle($this->plugin->txt("settings"));
+        $form->setFormAction($this->ctrl->getFormAction($this));
+        $form->setTitle($this->plugin->txt('settings'));
 
-        $login_image = new ilImageFileInputGUI($this->plugin->txt("login_image"), 'login_image');
+        $login_image = new ilImageFileInputGUI($this->plugin->txt('login_image'), 'login_image');
         $login_image->setAllowDeletion(false);
-        $image_url = './minarm_login.jpg';
-        if (file_exists($image_url)) {
+        $image_file = $this->plugin_path . '/' . self::LOGIN_IMAGE_NAME;
+        $image_url  = $this->plugin_url . '/' . self::LOGIN_IMAGE_NAME;
+        if (file_exists($image_file)) {
             $login_image->setImage($image_url);
         }
         $form->addItem($login_image);
 
-        $cache_input = new ilCheckboxInputGUI($this->plugin->txt("cache"), "dci_cache_enabled");
-        //$cache_input->setPostVar("purge[" . $row['obj_id'] . "][active]");
-        $cache_input->setOptionTitle($this->plugin->txt("enable_cache"));
-        $cache_input->setValue("true");
+        $cache_input = new ilCheckboxInputGUI($this->plugin->txt('cache'), 'dci_cache_enabled');
+        $cache_input->setOptionTitle($this->plugin->txt('enable_cache'));
+        $cache_input->setValue('true');
         $cache_input->setChecked($cache_enabled);
         $form->addItem($cache_input);
-        //echo $cache_input->render();
 
-        $form->addCommandButton("purgeCache", $this->plugin->txt("purge_cache"));
-        $form->addCommandButton("updateConfigure", $lng->txt("save"));
+        $form->addCommandButton(self::CMD_PURGE_CACHE, $this->plugin->txt('purge_cache'));
+        $form->addCommandButton(self::CMD_UPDATE_CONFIGURE, $this->lng->txt('save'));
 
         $tpl->setContent($form->getHTML());
     }
 
-    protected function updateConfigure() /*: void*/
+    protected function updateConfigure()
     {
-        global $lng, $DIC;
-
         if (! empty($_FILES['login_image']['name'])) {
-            move_uploaded_file($_FILES["login_image"]["tmp_name"], './minarm_login.jpg');
+            move_uploaded_file($_FILES['login_image']['tmp_name'], $this->plugin_path . '/' . self::LOGIN_IMAGE_NAME);
         }
 
-        $DIC['ilias']->setSetting("dci_cache_enabled", isset($_POST['dci_cache_enabled']));
+        $this->plugin->setVariable('dci_cache_enabled', isset($_POST['dci_cache_enabled']) ? 1 : 0);
 
         self::configure();
 
-        ilUtil::sendSuccess($this->plugin->txt("configuration_saved"), true);
-
+        ilUtil::sendSuccess($this->plugin->txt('configuration_saved'), true);
     }
 
-    protected function purgeCache() /*: bool */
+    protected function purgeCache()
     {
         $success = dciSkin_cache::purgeCache();
 
         self::configure();
 
         if ($success) {
-            ilUtil::sendSuccess($this->plugin->txt("cache_purged"), true);
+            ilUtil::sendSuccess($this->plugin->txt('cache_purged'), true);
         }
 
         return $success;

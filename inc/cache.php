@@ -18,7 +18,7 @@ class dciSkin_cache
         global $DIC;
         self::$user          = $DIC->user();
         self::$db            = $DIC->database();
-        self::$cache_enabled = $DIC['ilias']->getSetting("dci_cache_enabled");
+        self::$cache_enabled = filter_var(ilDciSkinPlugin::getInstance()->getVariable('dci_cache_enabled', false), FILTER_VALIDATE_BOOLEAN);
     }
 
     public static function purgeCache(): bool
