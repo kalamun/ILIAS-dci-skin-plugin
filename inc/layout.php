@@ -18,6 +18,8 @@
         $is_login_page = strpos($_SERVER['REQUEST_URI'], "login.php") !== false
             || (isset($_GET['cmdClass']) && strtolower($_GET['cmdClass']) == "ilstartupgui")
             || (isset($_GET['baseClass']) && strtolower($_GET['baseClass']) == "ilstartupgui");
+
+        /*
         if ($is_login_page) {
             $body_class[] = "is_login";
         } elseif ((isset($_GET['baseClass']) && $_GET['baseClass'] == "ilMailGUI")
@@ -32,9 +34,11 @@
         if (isset($_GET['ref_id']) && dciSkin_tabs::getRootCourse($_GET['ref_id']) !== false) {
             $body_class[] = "is_course";
         }
+ */
 
         $html = str_replace("{BODY_CLASS}", implode(" ", $body_class), $html);
-        $html = str_replace("{SKIN_URI}", "/Customizing/global/skin/dci", $html);
+        $html = str_replace("{SKIN_URI}", "/Customizing/skin/dci", $html);
+
         $html = str_replace("{DCI_HOMEPAGE_URL}", "/goto.php?target=root_1&client_id=default", $html);
 
         $html = str_replace("{LANGUAGE_SELECTOR}", dciSkin_menu::get_language_selector(), $html);

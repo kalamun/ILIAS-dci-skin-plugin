@@ -9,3 +9,4 @@ cache#:#Cache
 enable_cache#:#Enable cache
 purge_cache#:#Purge cache
 cache_purged#:#The cache has been purged
+homepage_url#:#Homepage URL

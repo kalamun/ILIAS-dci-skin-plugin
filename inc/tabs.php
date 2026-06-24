@@ -9,13 +9,16 @@ class dciSkin_tabs
 
     public static function apply_custom_placeholders($html)
     {
+        return $html;
         if (strpos($html, "{DCI_COURSE_MENU}") !== false) {
             $tabs = static::getCourseTabs();
-            if (! empty($tabs)) {
+            $output = "";
+            if (!empty($tabs)) {
                 $output  = '<div class="dci-course-tabs-inner">';
                 $output .= static::print_tabs_node($tabs);
                 $output .= '</div>';
             }
+
             $html = str_replace("{DCI_COURSE_MENU}", $output, $html);
         }
 
@@ -118,7 +121,7 @@ class dciSkin_tabs
             return $from_cache;
         }
 
-        $tabs = static::getChildArray($root_course['ref_id'], $current_ref_id);
+        $tabs = []; //static::getChildArray($root_course['ref_id'], $current_ref_id);
 
         dciSkin_cache::add('dciSkin_tabs::getCourseTabs', $tabs, $ref_id);
 
@@ -215,7 +218,7 @@ class dciSkin_tabs
 
                 $obj_id = $object->getId();
                 $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $tab['ref_id']);
-                $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "frameset");
+                $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "");
 
                 $cards           = static::getCardsOnPage($obj_id);
                 $cards_completed = array_filter($cards, fn($card) => isset($mandatory_objects_status[$card['obj_id']]) && ! empty($card['completed']));

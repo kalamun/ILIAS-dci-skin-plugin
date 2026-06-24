@@ -123,10 +123,9 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
         }
 
         try {
-            global $tpl;
-            global $DIC;
+            global $tpl, $DIC;
 
-            $homepage_url = "/ilias.php?ref_id=1&cmd=frameset&cmdClass=ilrepositorygui&baseClass=ilrepositorygui";
+            $homepage_url = $DIC['ilias']->getSetting("dci_homepage_url");
 
             $base_class = isset($_GET['baseClass']) ? (string) $_GET['baseClass'] : '';
             $cmd = isset($_GET['cmd']) ? (string) $_GET['cmd'] : '';
@@ -155,24 +154,24 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
 
                 /* menu */
                 if ($a_part == "template_get" && isset($a_par["tpl_id"])
-                    && $a_par["tpl_id"] == "src/UI/templates/default/MainControls/tpl.mainbar.html") {
+                    && $a_par["tpl_id"] == "components/ILIAS/UI/src/templates/default/MainControls/tpl.mainbar.html") {
                     $html = dciSkin_menu::apply_mainbar($html);
                 }
                 if ($a_part == "template_get" && isset($a_par["tpl_id"])
-                    && $a_par["tpl_id"] == "src/UI/templates/default/MainControls/tpl.metabar.html") {
+                    && $a_par["tpl_id"] == "components/ILIAS/UI/src/templates/default/MainControls/tpl.metabar.html") {
                     $html = dciSkin_menu::apply_metabar($html);
                 }
 
                 /* accordion */
                 if ($a_part == "template_get" && isset($a_par["tpl_id"])
-                    && $a_par["tpl_id"] == "Services/COPage/tpl.page.html"
+                    && $a_par["tpl_id"] == "components/ILIAS/COPage/tpl.page.html"
                     && strpos($html, "ilc_va_icntr_VAccordICntr") !== false) {
                     $html = dciSkin_accordion::apply($html);
                 }
 
                 /* remove cards default section */
                 if ($a_part == "template_get" && isset($a_par["tpl_id"])
-                    && $a_par["tpl_id"] == "Services/Container/tpl.container_page.html"
+                    && $a_par["tpl_id"] == "components/ILIAS/Container/tpl.container_page.html"
                     && strpos($html, "ilContainerBlock") !== false) {
                     $html = dciSkin_layout::remove_default_cards($html);
                     $html = dciSkin_layout::cleanup_dead_code($html);
@@ -180,7 +179,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
 
                 /* footer */
                 if ($a_part == "template_get" && isset($a_par['tpl_id'])
-                    && $a_par['tpl_id'] == "src/UI/templates/default/MainControls/tpl.footer.html") {
+                    && $a_par['tpl_id'] == "components/ILIAS/UI/src/templates/default/MainControls/tpl.footer.html") {
                     $html = dciSkin_footer::apply($html);
                 }
 

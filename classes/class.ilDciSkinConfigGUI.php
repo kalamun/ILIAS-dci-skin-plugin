@@ -70,6 +70,11 @@ class ilDciSkinConfigGUI extends ilPluginConfigGUI
         $form->setFormAction($this->ctrl->getFormAction($this));
         $form->setTitle($this->plugin->txt('settings'));
 
+        $homepage_url = new ilTextInputGUI($this->plugin->txt('homepage_url'), 'dci_homepage_url');
+        $homepage_url_value = $DIC['ilias']->getSetting("dci_homepage_url");
+        $homepage_url->setValue($homepage_url_value);
+        $form->addItem($homepage_url);
+
         $login_image = new ilImageFileInputGUI($this->plugin->txt('login_image'), 'login_image');
         $login_image->setAllowDeletion(false);
         $image_file = $this->plugin_path . '/' . self::LOGIN_IMAGE_NAME;
@@ -100,6 +105,7 @@ class ilDciSkinConfigGUI extends ilPluginConfigGUI
         }
 
         $DIC['ilias']->setSetting("dci_cache_enabled", isset($_POST['dci_cache_enabled']) ? 1 : 0);
+        $DIC['ilias']->setSetting("dci_homepage_url", (string)$_POST['dci_homepage_url']);
 
         self::configure();
 
@@ -109,7 +115,7 @@ class ilDciSkinConfigGUI extends ilPluginConfigGUI
     protected function purgeCache()
     {
         global $DIC;
-        
+
         $success = dciSkin_cache::purgeCache();
 
         self::configure();
