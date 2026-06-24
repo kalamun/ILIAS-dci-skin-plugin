@@ -1,8 +1,10 @@
 <?php
-
 /**
- * Config screen
+ * Class ilDciSkinConfigGUI
+ * @author            Roberto Pasini <bonjour@kalamun.net>
+ * @ilCtrl_IsCalledBy ilDciSkinConfigGUI: ilObjComponentSettingsGUI
  */
+
 class ilDciSkinConfigGUI extends ilPluginConfigGUI
 {
     const PLUGIN_CLASS_NAME    = ilDciSkinPlugin::class;
@@ -62,9 +64,8 @@ class ilDciSkinConfigGUI extends ilPluginConfigGUI
     {
         global $tpl, $DIC;
 
-        $cache_enabled = filter_var($this->plugin->getVariable('dci_cache_enabled', false), FILTER_VALIDATE_BOOLEAN);
+        $cache_enabled = filter_var($DIC['ilias']->getSetting("dci_cache_enabled"), FILTER_VALIDATE_BOOLEAN);
 
-        require_once "./Services/Form/classes/class.ilPropertyFormGUI.php";
         $form = new ilPropertyFormGUI();
         $form->setFormAction($this->ctrl->getFormAction($this));
         $form->setTitle($this->plugin->txt('settings'));
@@ -92,25 +93,29 @@ class ilDciSkinConfigGUI extends ilPluginConfigGUI
 
     protected function updateConfigure()
     {
+        global $DIC;
+
         if (! empty($_FILES['login_image']['name'])) {
             move_uploaded_file($_FILES['login_image']['tmp_name'], $this->plugin_path . '/' . self::LOGIN_IMAGE_NAME);
         }
 
-        $this->plugin->setVariable('dci_cache_enabled', isset($_POST['dci_cache_enabled']) ? 1 : 0);
+        $DIC['ilias']->setSetting("dci_cache_enabled", isset($_POST['dci_cache_enabled']) ? 1 : 0);
 
         self::configure();
 
-        ilUtil::sendSuccess($this->plugin->txt('configuration_saved'), true);
+        $DIC->ui()->mainTemplate()->setOnScreenMessage('success', $this->plugin->txt('configuration_saved'), true);
     }
 
     protected function purgeCache()
     {
+        global $DIC;
+        
         $success = dciSkin_cache::purgeCache();
 
         self::configure();
 
         if ($success) {
-            ilUtil::sendSuccess($this->plugin->txt('cache_purged'), true);
+            $DIC->ui()->mainTemplate()->setOnScreenMessage('success', $this->plugin->txt('cache_purged'), true);
         }
 
         return $success;
