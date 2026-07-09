@@ -98,11 +98,14 @@ class dciSkin_tabs
         $tree = $DIC->repositoryTree();
 
         $root_course = false;
-        for ($ref_id = $current_ref_id; $ref_id; $ref_id = $tree->getParentNodeData($ref_id)['ref_id']) {
-            $node_data = $DIC["tree"]->getNodeData($ref_id);
-            if (empty($node_data) || $node_data["type"] == "crs") {
-                $root_course = $node_data;
-                break;
+        return false;
+        for ($ref_id = $current_ref_id; $ref_id; $parent_node_tree = $tree->getParentNodeData($ref_id)) {
+            if (!empty($parent_node_tree['ref_id'])) {
+                $node_data = $DIC["tree"]->getNodeData($parent_node_tree['ref_id']);
+                if (empty($node_data) || $node_data["type"] == "crs") {
+                    $root_course = $node_data;
+                    break;
+                }
             }
         }
         return $root_course;

@@ -128,22 +128,6 @@
         global $DIC;
         $html = dciSkin_layout::apply_custom_placeholders($html);
 
-        $dom            = new DomDocument();
-        $internalErrors = libxml_use_internal_errors(true);
-        $dom->loadHTML('<?xml encoding="utf-8" ?>' . $html);
-        libxml_use_internal_errors($internalErrors);
-        $finder = new DomXPath($dom);
-
-        foreach ($finder->query('//form[contains(@id, "mm_search_form")]') as $menu_element) {
-            $div_container = $menu_element->parentNode->parentNode;
-            $li            = $div_container->parentNode;
-            $li->appendChild($menu_element);
-            $li->removeChild($div_container);
-            $li->setAttribute('class', $li->getAttribute("class") . " search");
-        }
-
-        $html = str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
-
         // always display inbox link
         if (strpos($html, "icon-mail") === false) {
             $inbox_link = "/ilias.php?baseClass=ilMailGUI";
@@ -159,8 +143,6 @@
             $html = substr_replace($html, $inbox_html . '<li ', strpos($html, '<li '), 4);
         }
 
-        $html = str_replace("<html><body>", "", $html);
-        $html = str_replace("</body></html>", "", $html);
         return $html;
     }
 
