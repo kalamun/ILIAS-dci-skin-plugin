@@ -23,7 +23,7 @@
                 $center = $repositoryTree->getParentNodeData($user_course['ref_id']);
                 if (! isset($centers[$center['ref_id']])) {
                     $centers[$center['ref_id']] = $center;
-
+                    
                     $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $center['ref_id']);
                     $permalink                               = $ctrl->getLinkTargetByClass("ilrepositorygui", "");
                     $centers[$center['ref_id']]['permalink'] = $permalink;
@@ -32,9 +32,9 @@
 
             if (count($centers) === 0) {
                 $html = self::remove_element("#TRAINING_CENTER_URI#", $html);
-
+                
             } else if (count($centers) === 1) {
-                $my_center_uri = $centers[0]['permalink'];
+                $my_center_uri = array_values($centers)[0]['permalink'];
                 $html          = str_replace("#TRAINING_CENTER_URI#", "/" . $my_center_uri, $html);
 
             } else {
@@ -48,7 +48,6 @@
                 $html = self::add_subelements("#TRAINING_CENTER_URI#", $subelements, $html);
 
             }
-
         }
 
         if (strpos($html, "#COURSES_URI#") !== false) {
