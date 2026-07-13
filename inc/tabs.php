@@ -9,7 +9,6 @@ class dciSkin_tabs
 
     public static function apply_custom_placeholders($html)
     {
-        return $html;
         if (strpos($html, "{DCI_COURSE_MENU}") !== false) {
             $tabs = static::getCourseTabs();
             $output = "";
@@ -96,18 +95,23 @@ class dciSkin_tabs
 
         global $DIC;
         $tree = $DIC->repositoryTree();
-
         $root_course = false;
-        return false;
+        
+        $parent_node_tree = ["ref_id" => $current_ref_id];
         for ($ref_id = $current_ref_id; $ref_id; $parent_node_tree = $tree->getParentNodeData($ref_id)) {
-            if (!empty($parent_node_tree['ref_id'])) {
-                $node_data = $DIC["tree"]->getNodeData($parent_node_tree['ref_id']);
-                if (empty($node_data) || $node_data["type"] == "crs") {
+            $ref_id = isset($parent_node_tree['ref_id']) ? $parent_node_tree['ref_id'] : false;
+            if (!empty($ref_id)) {
+                $node_data = $DIC["tree"]->getNodeData($ref_id);
+                if (empty($node_data)) {
+                    break;
+                }
+                if ($node_data["type"] == "crs") {
                     $root_course = $node_data;
                     break;
                 }
             }
         }
+
         return $root_course;
     }
 
@@ -119,12 +123,12 @@ class dciSkin_tabs
         $current_ref_id = $ref_id ?? $_GET['ref_id'];
         $root_course    = static::getRootCourse($current_ref_id);
 
-        $from_cache = dciSkin_cache::get('dciSkin_tabs::getCourseTabs', $root_course['ref_id']);
+        $from_cache = dciSkin_cache::get('dciSkin_tabs::getCourseTabs', $root_course['ref_id'] ?? 0);
         if (dciSkin_cache::is_valid($from_cache)) {
             return $from_cache;
         }
-
-        $tabs = []; //static::getChildArray($root_course['ref_id'], $current_ref_id);
+            
+        $tabs = static::getChildArray($root_course['ref_id'] ?? 0, $current_ref_id);
 
         dciSkin_cache::add('dciSkin_tabs::getCourseTabs', $tabs, $ref_id);
 
@@ -140,33 +144,39 @@ class dciSkin_tabs
         global $DIC;
         $ctrl = $DIC->ctrl();
         $tree = $DIC->repositoryTree();
-
-        $tabs           = [];
+        
+        $tabs = [];
         $current_ref_id = $ref_id ?? $_GET['ref_id'];
-
+        
         $root_course = static::getRootCourse($current_ref_id);
+        if (empty($root_course)) {
+            return [];
+        }
 
         $object = \ilObjectFactory::getInstanceByRefId($ref_id, false);
         if (empty($object) || $object->lookupOfflineStatus($ref_id) == true) {
             return [];
         }
-
+        
         if (! $object) {
             return [];
         }
-
+        
         $obj_id = $object->getId();
-
+        
         $sorting = \ilContainerSorting::lookupPositions($ref_id);
-
+        
         $mandatory_objects = \dciCourse::get_mandatory_objects($root_course["obj_id"]);
-
+        
         $mandatory_objects_status = [];
         foreach ($mandatory_objects as $obj) {
             $mandatory_objects_status[$obj['obj_id']] = $obj['completed'];
         }
 
         if ($ref_id == $root_course['ref_id']) {
+            $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $root_course['ref_id']);
+            $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "");
+
             $tabs = [
                 [
                     "id"              => $root_course['ref_id'],
@@ -174,7 +184,7 @@ class dciSkin_tabs
                     "obj_id"          => $obj_id,
                     "title"           => $root_course["title"],
                     "permalink"       => $permalink,
-                    "current_page"    => $tab['ref_id'] == $_GET['ref_id'],
+                    "current_page"    => $root_course['ref_id'] == $_GET['ref_id'],
                     "order"           => 0,
                     "root"            => true,
                     "parent_id"       => 0,
@@ -187,9 +197,9 @@ class dciSkin_tabs
                 ],
             ];
         }
-
+            
         $childs = $tree->getChilds($ref_id);
-
+        
         $container_sorting = \ilContainerSorting::_getInstance($obj_id);
         $sorting_settings  = $container_sorting->getSortingSettings();
         $sorting_settings->setSortMode(ilContainer::SORT_MANUAL);
@@ -197,18 +207,11 @@ class dciSkin_tabs
         $childs = $sorted['lsitems'];
 
         if (count($childs) > 0) {
-            if ($ref_id == $root_course['ref_id']) {
-                array_unshift($childs, [
-                    "type"   => "fold",
-                    "ref_id" => $root_course['ref_id'],
-                ]);
-            }
-
             foreach ($childs as $index => $tab) {
                 if (! in_array($tab["type"], ["fold", "grp"])) {
                     continue;
                 }
-
+                
                 $object = \ilObjectFactory::getInstanceByRefId($tab['ref_id'], false);
                 if (empty($object) || $object->lookupOfflineStatus($tab['ref_id']) == true) {
                     // object is offline - do not display
@@ -218,11 +221,11 @@ class dciSkin_tabs
                 if (! $object) {
                     continue;
                 }
-
+                
                 $obj_id = $object->getId();
                 $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $tab['ref_id']);
                 $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "");
-
+                
                 $cards           = static::getCardsOnPage($obj_id);
                 $cards_completed = array_filter($cards, fn($card) => isset($mandatory_objects_status[$card['obj_id']]) && ! empty($card['completed']));
                 $cards_mandatory = array_filter($cards, fn($card) => isset($mandatory_objects_status[$card['obj_id']]));
@@ -272,13 +275,13 @@ class dciSkin_tabs
         $ids  = [];
 
         $current_language = $DIC->language()->getContentLanguage();
-        $sql              = "SELECT content, rendered_time FROM page_object WHERE page_id = %s AND active = %s AND lang = %s ORDER BY rendered_time DESC LIMIT 1";
-        $res              = $db->queryF(
+        $sql = "SELECT content, rendered_time FROM page_object WHERE page_id = %s AND active = %s AND lang = %s ORDER BY rendered_time DESC LIMIT 1";
+        $res = $db->queryF(
             $sql,
             ['integer', 'integer', 'string'],
             [$obj_id, 1, $current_language]
         );
-        $page_content = $db->fetchAssoc($res)["content"];
+        $page_content = $db->fetchAssoc($res)["content"] ?? null;
 
         if (empty($page_content)) {
             $sql = "SELECT content, rendered_time FROM page_object WHERE page_id = %s AND active = %s ORDER BY rendered_time DESC LIMIT 1";
@@ -287,7 +290,7 @@ class dciSkin_tabs
                 ['integer', 'integer', 'string'],
                 [$obj_id, 1, $current_language]
             );
-            $page_content = $db->fetchAssoc($res)["content"];
+            $page_content = $db->fetchAssoc($res)["content"] ?? null;
         }
 
         if (empty($page_content)) {
@@ -357,7 +360,7 @@ class dciSkin_tabs
             ['integer', 'integer', 'string'],
             [$obj_id, 1, $current_language]
         );
-        $page_content = $db->fetchAssoc($res)["content"];
+        $page_content = $db->fetchAssoc($res)["content"] ?? null;
         if (empty($page_content)) {
             $sql = "SELECT DISTINCT content FROM page_object WHERE parent_id = %s AND active = %s AND lang = %s ORDER BY rendered_time DESC LIMIT 1";
             $res = $db->queryF(
@@ -365,7 +368,7 @@ class dciSkin_tabs
                 ['integer', 'integer', 'string'],
                 [$obj_id, 1, "-"]
             );
-            $page_content = $db->fetchAssoc($res)["content"];
+            $page_content = $db->fetchAssoc($res)["content"] ?? null;
             if (empty($page_content)) {
                 dciSkin_cache::add('dciSkin_tabs::getH1', "", $obj_id);
                 return "";

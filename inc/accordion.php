@@ -60,6 +60,7 @@ class dciSkin_accordion
         }
 
         $html = str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+        $html = preg_replace('/<!DOCTYPE[^>]*>/i', "", $html);
         $html = str_replace("<html><body>", "", $html);
         $html = str_replace("</body></html>", "", $html);
 

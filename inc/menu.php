@@ -1,5 +1,5 @@
 <?php
-    /**
+/**
  * Convert standard menus to customized ones
  * also adding progress indications
  */
@@ -25,7 +25,7 @@
                     $centers[$center['ref_id']] = $center;
                     
                     $ctrl->setParameterByClass("ilrepositorygui", "ref_id", $center['ref_id']);
-                    $permalink                               = $ctrl->getLinkTargetByClass("ilrepositorygui", "");
+                    $permalink = $ctrl->getLinkTargetByClass("ilrepositorygui", "");
                     $centers[$center['ref_id']]['permalink'] = $permalink;
                 }
             }
@@ -186,6 +186,7 @@
         }
 
         $html = str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+        $html = preg_replace('/<!DOCTYPE[^>]*>/i', "", $html);
         $html = str_replace("<html><body>", "", $html);
         $html = str_replace("</body></html>", "", $html);
 
@@ -205,6 +206,7 @@
         }
 
         $html = str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+        $html = preg_replace('/<!DOCTYPE[^>]*>/i', "", $html);
         $html = str_replace("<html><body>", "", $html);
         $html = str_replace("</body></html>", "", $html);
 
@@ -238,6 +240,7 @@
         $menu_element->appendChild($submenu);
 
         $html = str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+        $html = preg_replace('/<!DOCTYPE[^>]*>/i', "", $html);
         $html = str_replace("<html><body>", "", $html);
         $html = str_replace("</body></html>", "", $html);
 

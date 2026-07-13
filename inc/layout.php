@@ -63,7 +63,12 @@
             $card_container[0]->parentNode->removeChild($card_container[0]);
         }
 
-        return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+        $html = str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+        $html = preg_replace('/<!DOCTYPE[^>]*>/i', "", $html);
+        $html = str_replace("<html><body>", "", $html);
+        $html = str_replace("</body></html>", "", $html);
+
+        return $html;
     }
 
     public static function add_login_thumbnail($html)
@@ -100,7 +105,12 @@
             $card_container[0]->parentNode->removeChild($card_container[0]);
         }
 
-        return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+        $html = str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+        $html = preg_replace('/<!DOCTYPE[^>]*>/i', "", $html);
+        $html = str_replace("<html><body>", "", $html);
+        $html = str_replace("</body></html>", "", $html);
+
+        return $html;
     }
 
     public static function apply_custom_style($html)
@@ -176,7 +186,12 @@
                             //$cover[0]->parentNode->removeChild($cover[0]);
                         }
 
-                        return str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+                        $html = str_replace('<?xml encoding="utf-8" ?>', "", $dom->saveHTML());
+                        $html = preg_replace('/<!DOCTYPE[^>]*>/i', "", $html);
+                        $html = str_replace("<html><body>", "", $html);
+                        $html = str_replace("</body></html>", "", $html);
+
+                        return $html;
                     }
 
                     public static function getCoverFromRootPage($obj_id)
