@@ -15,12 +15,14 @@
 
         $body_class = [];
 
-        $is_login_page = strpos($_SERVER['REQUEST_URI'], "login.php") !== false
-            || (isset($_GET['cmdClass']) && strtolower($_GET['cmdClass']) == "ilstartupgui")
-            || (isset($_GET['baseClass']) && strtolower($_GET['baseClass']) == "ilstartupgui");
+        $cmd_class     = strtolower((string) $DIC->ctrl()->getCmdClass());
+        $is_login_page = $cmd_class === "ilstartupgui";
+        $is_legal_documents_page = $cmd_class === "illegaldocumentsagreementgui";
 
         if ($is_login_page) {
             $body_class[] = "is_login";
+        } elseif ($is_legal_documents_page) {
+            $body_class[] = "is_legal_doc";
         } elseif ((isset($_GET['baseClass']) && $_GET['baseClass'] == "ilMailGUI")
             || (isset($_GET['cmdClass']) && ($_GET['cmdClass'] == "ilmailfoldergui" || $_GET['cmdClass'] == "showMail"))) {
             $body_class[] = "is_inbox";
@@ -111,6 +113,22 @@
         $html = str_replace("</body></html>", "", $html);
 
         return $html;
+    }
+
+    /**
+     * Load third-party assets (currently Splide) on every page. ilDciSkinPlugin
+     * is a UserInterfaceHook plugin, so ilPageComponentPlugin::getJavascriptFiles()/
+     * getCssFiles() (only called by ilPCPlugged for "Plugged" page components)
+     * never run for it - assets have to be injected into the rendered HTML here
+     * instead, the same way apply_custom_style() appends its <style> tag.
+     */
+    public static function apply_vendor_assets($html, $relative_dir)
+    {
+        $tags = '<link rel="stylesheet" href="' . $relative_dir . '/css/splide.min.css" />'
+            . '<link rel="stylesheet" href="' . $relative_dir . '/css/splide-core.min.css" />'
+            . '<script src="' . $relative_dir . '/js/splide.min.js"></script>';
+
+        return $html . $tags;
     }
 
     public static function apply_custom_style($html)

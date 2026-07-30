@@ -31,7 +31,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
             return;
         }
 
-        // === Protection 1 : appel cache wrapped ===
+        // === Protection 1: wrap cache ===
         try {
             dciSkin_cache::on_loading_page();
         } catch (\Throwable $e) {
@@ -49,7 +49,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
             return;
         }
 
-        // === Protection 2 : vérifier l'état du DIC avant tout accès ===
+        // === Protection 2: check DIC stsatus before any access ===
         global $DIC;
         if (! isset($DIC) || ! ($DIC instanceof \ILIAS\DI\Container)) {
             return;
@@ -74,7 +74,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
                 return;
             }
 
-            // === Protection 3 : RBAC en try/catch ===
+            // === Protection 3: wrap RBAC in try/catch ===
             if (! isset($DIC['rbacreview'])) {
                 $this->is_initialized = true;
                 return;
@@ -144,6 +144,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
                     $html = dciSkin_layout::apply_custom_placeholders($html);
                     $html = dciSkin_layout::apply_custom_style($html);
                     $html = dciSkin_layout::apply_cover($html);
+                    $html = dciSkin_layout::apply_vendor_assets($html, $this->getPluginObject()->getRelativeDirectory());
                 }
 
                 /* login */

@@ -3,6 +3,7 @@ completed#:#Completato
 time_spent#:#Tempo speso
 progress_status#:#Avanzamento del corso
 login_image#:#Sfondo della pagina di login
+login_image_invalid#:#Il file caricato non è un'immagine valida e non è stato salvato
 settings#:#Impostazioni
 configuration_saved#:#Nuove impostazioni salvate con successo
 cache#:#Cache

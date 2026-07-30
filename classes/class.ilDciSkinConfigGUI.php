@@ -5,14 +5,18 @@
  * @ilCtrl_IsCalledBy ilDciSkinConfigGUI: ilObjComponentSettingsGUI
  */
 
+use ILIAS\Filesystem\Stream\Streams;
+
 class ilDciSkinConfigGUI extends ilPluginConfigGUI
 {
-    const PLUGIN_CLASS_NAME    = ilDciSkinPlugin::class;
-    const CMD_CONFIGURE        = "configure";
-    const CMD_UPDATE_CONFIGURE = "updateConfigure";
-    const CMD_PURGE_CACHE      = "purgeCache";
-    const LANG_MODULE          = "config";
-    const LOGIN_IMAGE_NAME     = 'minarm_login.jpg';
+    const PLUGIN_CLASS_NAME     = ilDciSkinPlugin::class;
+    const CMD_CONFIGURE         = "configure";
+    const CMD_UPDATE_CONFIGURE  = "updateConfigure";
+    const CMD_PURGE_CACHE       = "purgeCache";
+    const LANG_MODULE           = "config";
+    const LOGIN_IMAGE_NAME      = 'minarm_login.jpg';
+    const LOGIN_IMAGE_MAX_WIDTH = 1600;
+    const UPLOAD_DIR_NAME       = 'upload';
 
     /** @var \ILIAS\DI\Container */
     protected $dic;
@@ -100,8 +104,8 @@ class ilDciSkinConfigGUI extends ilPluginConfigGUI
     {
         global $DIC;
 
-        if (! empty($_FILES['login_image']['name'])) {
-            move_uploaded_file($_FILES['login_image']['tmp_name'], $this->plugin_path . '/' . self::LOGIN_IMAGE_NAME);
+        if (! empty($_FILES['login_image']['name']) && is_uploaded_file($_FILES['login_image']['tmp_name'])) {
+            $this->storeLoginImage($_FILES['login_image']['tmp_name'], $_FILES['login_image']['name']);
         }
 
         $DIC['ilias']->setSetting("dci_cache_enabled", isset($_POST['dci_cache_enabled']) ? 1 : 0);
@@ -110,6 +114,46 @@ class ilDciSkinConfigGUI extends ilPluginConfigGUI
         self::configure();
 
         $DIC->ui()->mainTemplate()->setOnScreenMessage('success', $this->plugin->txt('configuration_saved'), true);
+    }
+
+    /**
+     * Stores the uploaded login background, resized to a maximum width,
+     * in the plugin's own upload directory, and exports a public copy
+     * next to the plugin so the (anonymous) login page can display it
+     * directly, without going through ILIAS's access-controlled file delivery.
+     */
+    protected function storeLoginImage(string $tmp_name, string $original_name): void
+    {
+        global $DIC;
+
+        $image_size = @getimagesize($tmp_name);
+        if ($image_size === false) {
+            $DIC->ui()->mainTemplate()->setOnScreenMessage('failure', $this->plugin->txt('login_image_invalid'), true);
+            return;
+        }
+
+        $target_width = min((int) $image_size[0], self::LOGIN_IMAGE_MAX_WIDTH);
+        $converted = $DIC->fileConverters()->images()->resizeByWidth(
+            Streams::ofResource(fopen($tmp_name, 'rb')),
+            $target_width
+        );
+        if (! $converted->isOK()) {
+            $DIC->ui()->mainTemplate()->setOnScreenMessage('failure', $this->plugin->txt('login_image_invalid'), true);
+            return;
+        }
+
+        $extension = image_type_to_extension((int) $image_size[2]);
+        $stored_name = pathinfo($original_name, PATHINFO_FILENAME) . $extension;
+
+        $upload_dir = $this->plugin_path . '/' . self::UPLOAD_DIR_NAME;
+        if (! is_dir($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
+        }
+        $upload_file = $upload_dir . '/' . $stored_name;
+
+        file_put_contents($upload_file, $converted->getStream()->getContents());
+
+        copy($upload_file, $this->plugin_path . '/' . self::LOGIN_IMAGE_NAME);
     }
 
     protected function purgeCache()

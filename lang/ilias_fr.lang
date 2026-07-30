@@ -3,6 +3,7 @@ completed#:#Complété
 time_spent#:#Temps passé
 progress_status#:#Progression dans le parcours
 login_image#:#Image d'arriere de la page de login
+login_image_invalid#:#Le fichier envoyé n'est pas une image valide et n'a pas pu être enregistré
 settings#:#Préférences
 configuration_saved#:#Préférences enregistrées
 cache#:#Cache

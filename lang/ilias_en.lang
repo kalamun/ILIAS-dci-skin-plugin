@@ -3,6 +3,7 @@ completed#:#Completed
 time_spent#:#Time spent
 progress_status#:#Progress status
 login_image#:#Background image for login page
+login_image_invalid#:#The uploaded file is not a valid image and could not be saved
 settings#:#Settings
 configuration_saved#:#The modifications have been saved
 cache#:#Cache

@@ -50,5 +50,6 @@
     {
         return self::PLUGIN_NAME;
     }
+
 }
  
