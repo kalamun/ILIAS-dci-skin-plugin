@@ -164,9 +164,9 @@ class dciSkin_tabs
         
         $obj_id = $object->getId();
         
-        $sorting = \ilContainerSorting::lookupPositions($ref_id);
+        // $sorting = \ilContainerSorting::lookupPositions($ref_id);
         
-        $mandatory_objects = \dciCourse::get_mandatory_objects($root_course["obj_id"]);
+        $mandatory_objects = empty($root_course["obj_id"]) ? [] : \dciCourse::get_mandatory_objects($root_course["obj_id"]);
         
         $mandatory_objects_status = [];
         foreach ($mandatory_objects as $obj) {

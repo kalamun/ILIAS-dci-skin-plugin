@@ -48,8 +48,10 @@ class dciSkin_accordion
                 }
 
                 if (! $is_completed || $progress_total == 0) {
-                    $content_wrapper = $finder->query('.//div[contains(@class, "il_AccordionContentDef")]', $node)[0];
-                    $content_wrapper->setAttribute('class', str_replace('ilAccHideContent', '', $content_wrapper->getAttribute('class')));
+                    $content_wrapper = $finder->query('.//div[contains(@class, "il_VAccordionContentDef")]', $node)[0] ?? null;
+                    if ($content_wrapper) {
+                        $content_wrapper->setAttribute('class', str_replace('ilAccHideContent', '', $content_wrapper->getAttribute('class')));
+                    }
                 }
 
                 // toggle
