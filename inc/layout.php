@@ -32,8 +32,17 @@
             $body_class[] = "is_excercise";
         }
 
-        if (isset($_GET['ref_id']) && dciSkin_tabs::getRootCourse($_GET['ref_id']) !== false) {
-            $body_class[] = "is_course";
+        // Walking the repository tree here can throw on corrupted/orphaned tree
+        // entries (see ilTree::getNodeData()). That must never prevent the
+        // placeholder substitutions below - a page with a plain body class is
+        // fine, a page with a literal unresolved {SKIN_URI} is broken (missing
+        // CSS/JS entirely).
+        try {
+            if (isset($_GET['ref_id']) && dciSkin_tabs::getRootCourse($_GET['ref_id']) !== false) {
+                $body_class[] = "is_course";
+            }
+        } catch (\Throwable $e) {
+            error_log('[DciSkin] getRootCourse() failed for ref_id ' . ($_GET['ref_id'] ?? '?') . ': ' . $e->getMessage());
         }
 
         $html = str_replace("{BODY_CLASS}", implode(" ", $body_class), $html);
@@ -137,8 +146,12 @@
         $style_tag = "";
 
         if (! empty($_GET['ref_id'])) {
+            // getRootCourse() legitimately returns false when ref_id isn't
+            // nested under any course (e.g. a category, the root folder, or
+            // anything outside a course) - fall back the same way the "no
+            // ref_id at all" branch below does instead of indexing into false.
             $root_id = dciSkin_tabs::getRootCourse($_GET['ref_id']);
-            $obj_id  = $root_id['obj_id'];
+            $obj_id  = $root_id['obj_id'] ?? $DIC->ctrl()->getContextObjId();
         } else {
             $obj_id = $DIC->ctrl()->getContextObjId();
         }

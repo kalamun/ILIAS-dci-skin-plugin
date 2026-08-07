@@ -141,10 +141,22 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
                 $html = $a_par["html"];
 
                 if ($a_part == "template_show") {
-                    $html = dciSkin_layout::apply_custom_placeholders($html);
-                    $html = dciSkin_layout::apply_custom_style($html);
-                    $html = dciSkin_layout::apply_cover($html);
-                    $html = dciSkin_layout::apply_vendor_assets($html, $this->getPluginObject()->getRelativeDirectory());
+                    // Each step is independently guarded so a failure in one (e.g.
+                    // apply_custom_style()'s per-course lookups) can't roll back
+                    // substitutions already made by an earlier step - losing e.g.
+                    // {SKIN_URI} breaks the page's CSS/JS entirely, not just styling.
+                    foreach ([
+                        'apply_custom_placeholders' => fn($h) => dciSkin_layout::apply_custom_placeholders($h),
+                        'apply_custom_style' => fn($h) => dciSkin_layout::apply_custom_style($h),
+                        'apply_cover' => fn($h) => dciSkin_layout::apply_cover($h),
+                        'apply_vendor_assets' => fn($h) => dciSkin_layout::apply_vendor_assets($h, $this->getPluginObject()->getRelativeDirectory()),
+                    ] as $step => $fn) {
+                        try {
+                            $html = $fn($html);
+                        } catch (\Throwable $e) {
+                            error_log('[DciSkin] template_show step ' . $step . '() failed: ' . $e->getMessage());
+                        }
+                    }
                 }
 
                 /* login */
@@ -185,8 +197,21 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
                 }
 
                 if ($a_part == "template_load") {
-                    $html = dciSkin_layout::apply_custom_placeholders($html);
-                    $html = dciSkin_tabs::apply_custom_placeholders($html);
+                    // Each call is independently guarded: a failure building the
+                    // course-menu sidebar (which does DB/XML work per child object)
+                    // must not roll back the {SKIN_URI}/{BODY_CLASS}/etc. substitutions
+                    // already applied by the first call - losing those breaks the
+                    // page's CSS/JS entirely, not just the sidebar.
+                    try {
+                        $html = dciSkin_layout::apply_custom_placeholders($html);
+                    } catch (\Throwable $e) {
+                        error_log('[DciSkin] apply_custom_placeholders() failed: ' . $e->getMessage());
+                    }
+                    try {
+                        $html = dciSkin_tabs::apply_custom_placeholders($html);
+                    } catch (\Throwable $e) {
+                        error_log('[DciSkin] dciSkin_tabs::apply_custom_placeholders() failed: ' . $e->getMessage());
+                    }
                 }
 
                 return ["mode" => ilUIHookPluginGUI::REPLACE, "html" => $html];

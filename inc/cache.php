@@ -70,9 +70,9 @@ class dciSkin_cache
         die();
  */
         /* before adding a user to a course */
-        if (strtolower($_GET['cmdClass']) == 'ilrepositorysearchgui'
-            && $_GET['cmd'] == 'post'
-            && $_GET['baseClass'] == 'ilrepositorygui'
+        if (strtolower($_GET['cmdClass'] ?? '') == 'ilrepositorysearchgui'
+            && ($_GET['cmd'] ?? '') == 'post'
+            && ($_GET['baseClass'] ?? '') == 'ilrepositorygui'
             && ! empty($_POST['user_login'])
             && ! empty($_POST['user_type'])
         ) {
