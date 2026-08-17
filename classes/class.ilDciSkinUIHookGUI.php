@@ -127,14 +127,36 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
 
             $homepage_url = $DIC['ilias']->getSetting("dci_homepage_url");
 
-            $base_class = isset($_GET['baseClass']) ? (string) $_GET['baseClass'] : '';
-            $cmd = isset($_GET['cmd']) ? (string) $_GET['cmd'] : '';
+            $base_class = isset($_GET['baseClass']) ? strtolower((string) $_GET['baseClass']) : '';
+            $cmd = isset($_GET['cmd']) ? strtolower((string) $_GET['cmd']) : '';
 
-            if (strpos($homepage_url, "ilDashboardGUI") === false
-                && $base_class === "ilDashboardGUI"
-                && $cmd === "jumpToSelectedItems") {
+            if (strpos($homepage_url, "ildashboardgui") === false
+                && $base_class === "ildashboardgui"
+                && $cmd === "jumptoselecteditems") {
                 header('Location: ' . $homepage_url);
                 exit;
+                }
+                
+            // Logout page : redirect to login if SAML or OIDC are not enabled
+            if ($base_class == "ilstartupgui" && $cmd == "showlogout") {
+                $saml_active = false;
+                $oidc_active = false;
+
+                try {
+                    $saml_active = count(ilSamlIdp::getActiveIdpList()) > 0;
+                } catch (\Throwable $e) {
+                    error_log('[DciSkin] SAML active check failed: ' . $e->getMessage());
+                }
+
+                try {
+                    $oidc_active = ilOpenIdConnectSettings::getInstance()->getActive();
+                } catch (\Throwable $e) {
+                    error_log('[DciSkin] OIDC active check failed: ' . $e->getMessage());
+                }
+
+                if (! $saml_active && ! $oidc_active) {
+                    header('Location: /login.php?cmd=force_login');
+                }
             }
 
             if (! $this->is_admin && ! $this->is_tutor && ! empty($a_par["html"]) && ! $this->ctrl->isAsynch()) {

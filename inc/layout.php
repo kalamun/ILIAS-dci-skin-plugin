@@ -20,15 +20,15 @@
         $is_legal_documents_page = $cmd_class === "illegaldocumentsagreementgui";
 
         if ($is_login_page) {
-            $body_class[] = "is_login";
+            $body_class[] = strtolower($_GET['cmd']) == "showlogout" ? "is_logout" : "is_login";
         } elseif ($is_legal_documents_page) {
             $body_class[] = "is_legal_doc";
-        } elseif ((isset($_GET['baseClass']) && $_GET['baseClass'] == "ilMailGUI")
-            || (isset($_GET['cmdClass']) && ($_GET['cmdClass'] == "ilmailfoldergui" || $_GET['cmdClass'] == "showMail"))) {
+        } elseif ((isset($_GET['baseClass']) && strtolower($_GET['baseClass']) == "ilmailgui")
+            || (isset($_GET['cmdClass']) && (strtolower($_GET['cmdClass']) == "ilmailfoldergui" || strtolower($_GET['cmdClass']) == "showmail"))) {
             $body_class[] = "is_inbox";
-        } elseif (isset($_GET['cmdClass']) && ($_GET['cmdClass'] == "iltestevaluationgui" || $_GET['cmdClass'] == "ilobjtestgui")) {
+        } elseif (isset($_GET['cmdClass']) && (strtolower($_GET['cmdClass']) == "iltestevaluationgui" || strtolower($_GET['cmdClass']) == "ilobjtestgui")) {
             $body_class[] = "is_test";
-        } elseif (isset($_GET['baseClass']) && $_GET['baseClass'] == "ilexercisehandlergui") {
+        } elseif (isset($_GET['baseClass']) && strtolower($_GET['baseClass']) == "ilexercisehandlergui") {
             $body_class[] = "is_excercise";
         }
 
