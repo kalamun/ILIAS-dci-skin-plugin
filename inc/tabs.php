@@ -314,6 +314,7 @@ class dciSkin_tabs
         foreach ($ids as $i => $id) {
             $object = \ilObjectFactory::getInstanceByRefId($id['ref_id'], false);
             if (empty($object)) {
+                unset($ids[$i]);
                 continue;
             }
 
@@ -323,16 +324,23 @@ class dciSkin_tabs
                 continue;
             }
 
-            $obj_id = $object->getId();
+            $card_obj_id = $object->getId();
 
-            $already_exists = array_search($id['ref_id'], array_column($ids, 'ref_id'));
-            if (isset($already_exists['completed'])) {
-                $ids[$i] = $already_exists;
+            $existing_index = null;
+            foreach ($ids as $j => $entry) {
+                if ($j !== $i && $entry['ref_id'] === $id['ref_id'] && isset($entry['obj_id'])) {
+                    $existing_index = $j;
+                    break;
+                }
+            }
+
+            if ($existing_index !== null) {
+                $ids[$i] = $ids[$existing_index];
             } else {
-                $lp_completed = ilLPStatus::_hasUserCompleted($obj_id, $user->getId());
+                $lp_completed = ilLPStatus::_hasUserCompleted($card_obj_id, $user->getId());
 
                 $ids[$i]['type']      = $object->getType();
-                $ids[$i]['obj_id']    = $obj_id;
+                $ids[$i]['obj_id']    = $card_obj_id;
                 $ids[$i]['completed'] = $lp_completed;
             }
         }
