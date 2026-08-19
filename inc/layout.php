@@ -24,6 +24,8 @@
             $body_class[] = "is_test";
         } elseif ($_GET['baseClass'] == "ilexercisehandlergui") {
             $body_class[] = "is_excercise";
+        } elseif ($_GET['cmdClass'] == "ilusercertificategui") {
+            $body_class[] = "is_certificate";
         }
 
         if (dciSkin_tabs::getRootCourse($_GET['ref_id']) !== false) {
