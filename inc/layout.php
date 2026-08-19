@@ -30,6 +30,8 @@
             $body_class[] = "is_test";
         } elseif (isset($_GET['baseClass']) && strtolower($_GET['baseClass']) == "ilexercisehandlergui") {
             $body_class[] = "is_excercise";
+        } elseif (strtolower($_GET['cmdClass']) == "ilusercertificategui") {
+            $body_class[] = "is_certificate";
         }
 
         // Walking the repository tree here can throw on corrupted/orphaned tree
