@@ -15,11 +15,11 @@ class dciSkin_accordion
         libxml_use_internal_errors($internalErrors);
         $finder = new DomXPath($dom);
 
-        foreach ($finder->query('//div[contains(@class, "ilc_va_icntr_AccordICntr")]') as $node) {
+        foreach ($finder->query('//div[contains(@class, "ilc_va_icntr_AccordICntr") or contains(@class, "ilc_va_icntr_VAccordICntr")]') as $node) {
             $node->setAttribute('class', $node->getAttribute('class') . ' dci-accordion');
 
             // heading
-            $heading_wrapper = $finder->query('.//div[contains(@class, "ilc_va_ihead_AccordIHead")]', $node)[0];
+            $heading_wrapper = $finder->query('.//div[contains(@class, "ilc_va_ihead_AccordIHead") or contains(@class, "ilc_va_ihead_VAccordIHead")]', $node)[0];
             $heading_wrapper->setAttribute('class', 'dci-accordion-heading');
             $heading = $finder->query('.//div', $heading_wrapper)[0];
 
@@ -48,7 +48,7 @@ class dciSkin_accordion
                 }
 
                 if (! $is_completed || $progress_total == 0) {
-                    $content_wrapper = $finder->query('.//div[contains(@class, "il_VAccordionContentDef")]', $node)[0] ?? null;
+                    $content_wrapper = $finder->query('.//div[contains(@class, "il_AccordionContentDef") or contains(@class, "il_VAccordionContentDef")]', $node)[0] ?? null;
                     if ($content_wrapper) {
                         $content_wrapper->setAttribute('class', str_replace('ilAccHideContent', '', $content_wrapper->getAttribute('class')));
                     }
