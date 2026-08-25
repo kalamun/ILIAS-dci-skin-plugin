@@ -185,6 +185,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
                 if ($a_part == "template_add" && isset($a_par["tpl_id"])
                     && strpos($a_par["tpl_id"], "tpl.login.html") !== false) {
                     $html = dciSkin_layout::add_login_thumbnail($html);
+                    $html = dciSkin_layout::apply_custom_placeholders($html);
                 }
 
                 /* menu */
