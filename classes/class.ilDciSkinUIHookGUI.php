@@ -201,7 +201,7 @@ class ilDciSkinUIHookGUI extends ilUIHookPluginGUI
                 /* accordion */
                 if ($a_part == "template_get" && isset($a_par["tpl_id"])
                     && $a_par["tpl_id"] == "components/ILIAS/COPage/tpl.page.html"
-                    && strpos($html, "ilc_va_icntr_AccordICntr") !== false) {
+                    && (strpos($html, "ilc_va_icntr_AccordICntr") !== false || strpos($html, "ilc_va_icntr_VAccordICntr") !== false)) {
                     $html = dciSkin_accordion::apply($html);
                 }
 
