@@ -124,6 +124,10 @@
         $html = preg_replace('/<!DOCTYPE[^>]*>/i', "", $html);
         $html = str_replace("<html><body>", "", $html);
         $html = str_replace("</body></html>", "", $html);
+        
+        // replace converted <center> tag, since is commonly used by DCI
+        $html = str_replace('&lt;center&gt;', "<center>", $html);
+        $html = str_replace('&lt;/center&gt;', "</center>", $html);
 
         return $html;
     }
