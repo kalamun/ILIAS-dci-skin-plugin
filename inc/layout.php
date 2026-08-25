@@ -32,6 +32,8 @@
             $body_class[] = "is_excercise";
         } elseif (strtolower($_GET['cmdClass']) == "ilusercertificategui") {
             $body_class[] = "is_certificate";
+        } else {
+            $body_class[] = "is_page";
         }
 
         // Walking the repository tree here can throw on corrupted/orphaned tree
